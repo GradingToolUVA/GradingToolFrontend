@@ -1,0 +1,9 @@
+.commentDiv {
+  color: black;
+}
+
+.commentContent {
+  color: black;
+  max-width: 160px;
+  width: 160px;
+}

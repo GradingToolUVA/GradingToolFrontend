@@ -1,0 +1,51 @@
+div {
+  color: #6ab6fd
+}
+
+.siderElementContainer {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.semesterSelect {
+  padding-left: 5px;
+  padding-bottom: 5px;
+  width: 60%;
+}
+
+.collapse {
+  display: inline-block;
+  width: 100%;
+}
+
+.mainPopover {
+  display: inline-block;
+}
+
+.mainGrade {
+  height: 30px;
+  vertical-align: top;
+  background: transparent;
+  border: solid #1890FF;
+}
+
+.commentButton {
+  width: 100%;
+  text-align: left;
+}
+
+.subCategory {
+  display: inline-block;
+  width: 82%;
+  /*border: 1px solid rgb(168, 167, 167);*/
+  text-align: left;
+  color: black;
+}
+
+.subGrade {
+  display: inline-block;
+  width: 18%;
+  /*border: 1px solid rgb(168, 167, 167);*/
+  padding-left: 2px;
+  color: black;
+}
