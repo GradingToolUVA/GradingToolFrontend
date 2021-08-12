@@ -845,7 +845,7 @@ class Tool extends React.Component {
             const url = "https://sites.google.com" + p.url
             return (
               <Menu.Item>
-                <a target="_blank" href={url}>
+                <a target="_blank" rel="noreferrer" href={url}>
                   {p.name}
                 </a>
               </Menu.Item>
@@ -853,7 +853,7 @@ class Tool extends React.Component {
           } else {
             return (
               <Menu.Item>
-                <a target="_blank" href={p.url}>
+                <a target="_blank" rel="noreferrer" href={p.url}>
                   {p.name}
                 </a>
               </Menu.Item>
