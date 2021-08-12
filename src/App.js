@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Switch, Route } from "react-router-dom";
 
-import "./asset/less/App.less";
+import "./asset/css/App.css";
 import { Layout } from "antd";
 
 import Tool from "./page/Tool";

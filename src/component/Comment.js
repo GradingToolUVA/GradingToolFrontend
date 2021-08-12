@@ -19,7 +19,8 @@
     DeleteOutlined,
     ExclamationCircleOutlined,
     CheckOutlined,
-    CloseOutlined
+    CloseOutlined,
+    CommentOutlined
   } from "@ant-design/icons";
 
   import '../asset/css/ToolContent.css'
@@ -79,8 +80,11 @@
                   style={{float:"right"}}
                   onClick={() => {this.deleteCommentHandler(this.props.comment.y, index)}}
                 />
+                <Popover content={this.props.anotherComment(this.props.comment.sectionName, this.props.comment.y)} placement="bottomRight" trigger="click">
+                  <Button size="small" icon={<CommentOutlined />}style={{float:"right",marginRight:"3px"}}/>
+                </Popover>
                 <br/>
-                <Title level={5} editable={{}}>{c.comment}</Title>
+                <Title level={5} editable={{tooltip:false, onChange: (string) => {this.props.editCommentText(this.props.comment.y, string, index)}}}>{c.comment}</Title>
                 {c.additionalComment !== ""
                   ? <Paragraph editable={{tooltip:false, onChange: (string) => {this.editAdditionalComment(string, index)}}}>
                       {c.additionalComment}
@@ -119,19 +123,19 @@
                               </div>
                             </div>
                           )
-                        : <Button type="link" onClick={() => {this.addingExtraComment(index)}}>Add extra comment</Button>
+                        : <Button size="small" type="link" onClick={() => {this.addingExtraComment(index)}}>Add extra comment</Button>
                       )
                     ]
                 }
-                <Title level={5}>-----</Title>
+                <hr/>
               </div>
             )
           })}
-          <Popover content={this.props.anotherComment(this.props.comment.sectionName, this.props.comment.y)} placement="top" trigger="click">
+          {/*<Popover content={this.props.anotherComment(this.props.comment.sectionName, this.props.comment.y)} placement="top" trigger="click">
             <Button type="primary" size="small">
               Add another comment
             </Button>
-          </Popover>
+          </Popover>*/}
         </div>
       )
     }

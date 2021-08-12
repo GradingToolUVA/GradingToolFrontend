@@ -11,11 +11,13 @@ import {
   Col,
   Select,
   message,
+  Dropdown,
 } from "antd";
 import {
   CaretLeftOutlined,
   CaretRightOutlined,
   DownOutlined, 
+  ReloadOutlined
 } from "@ant-design/icons";
 
 import CSRFToken from "../component/CSRFToken";
@@ -32,6 +34,8 @@ import {
   getComments,
   patchComment,
   deleteComment, 
+  postSubmission,
+  updateSubmission
 } from '../api/submission'
 
 const { SubMenu } = Menu;
@@ -54,6 +58,7 @@ class Tool extends React.Component {
       highlight_text: [],//"",
       n: 0, //highlighted text is the nth occurance of that text in the submission
       submissionNodes: [], //the nodes of the html of the submission
+      submissionID: 0,
       comments: [], //array of objects containing the comment and other data
         /*{ 
             x:, 
@@ -126,14 +131,15 @@ class Tool extends React.Component {
     const phase = this.state.phase.split(" ").join("-").toLowerCase()
     let url = baseURL + sem + "-team-" + team + "/" + phase + "?authuser=0"
     url = encodeURIComponent(url)
-    getRubricByName(this.state.phase)
-      .then((rubricResponse) => {
-        const rubricObj = JSON.parse(rubricResponse.data.content[0].rubric)
-        console.log(rubricObj)
-        getSubmission(team, this.state.phase, sem)
-          .then((submissionResponse) => {
-            const submissionObj = JSON.parse(submissionResponse.data.content[0])
-            console.log(submissionObj)
+    getSubmission(team, this.state.phase, sem)
+      .then((submissionResponse) => {
+        const submissionObj = JSON.parse(submissionResponse.data.content[0])
+        const submissionID = submissionObj.id
+        console.log(submissionObj)
+        getRubricByName(this.state.phase)
+          .then((rubricResponse) => {
+            const rubricObj = JSON.parse(rubricResponse.data.content[0].rubric)
+            console.log(rubricObj)
             getSubmissionPages(team, this.state.phase, sem)
               .then((pagesResponse) => {
                 const pages = pagesResponse.data.content
@@ -163,11 +169,15 @@ class Tool extends React.Component {
                     extras.push(section)
                   }
                 }
+                for(const p of pages) {
+                  //check if the section exists
+                }
                 console.log(phaseSections)
                 console.log(extras)
                 this.setState({
                   phaseSections: phaseSections,
                   pages: pages,
+                  submissionID: submissionID
                 })
                 //LOAD THE ACTUAL HTML
                 const landingPg = pages.filter(p => p.name === "Landing Page")[0]
@@ -189,8 +199,33 @@ class Tool extends React.Component {
           })
       })
       .catch((error) => {
-        message.error(error.message)
-        console.log(error.response)
+        if(error.response.status === 400) { //then create the submission    
+          getRubricByName(this.state.phase)
+            .then((response) => {
+              const rubric_id = response.data.content[0].id
+              const params = {
+                encoded_url: url,
+                group: ["Jack"],
+                group_name: team,
+                assignment_id: rubric_id,
+                semester: sem,
+              }
+              postSubmission(params)
+                .then((response) => {
+                  message.success("New submission detected, please refresh")
+                })
+                .catch((error) => {
+                  message.error(error.message)
+                  console.log(error.response)
+                })
+            })
+            .catch((error) => {
+              message.error(error.message)
+              console.log(error.response)
+            })
+        } else {
+          message.error(error.message)
+        }
       })
     /*getCurrentHTML(url)
       .then((response) => {
@@ -230,7 +265,7 @@ class Tool extends React.Component {
       })
       .catch((error) => {console.log(error.message)})*/
   }
-
+  
   loadHandler = () => { //on iFrame load
     //set the height to fit content
     var submission = document.getElementById("submission");
@@ -390,6 +425,18 @@ class Tool extends React.Component {
             criteria.ptsEarned += comment.value;
             this.setState({
               phaseSections: this.state.phaseSections
+            }, () => {
+              const patchTemplate = this.getSubmissionTemplatePatch()
+              const params = {template: patchTemplate}
+              console.log(params)
+              updateSubmission(this.state.submissionID, params)
+                .then((response) => {
+                  message.success("Updated template")
+                })
+                .catch((error) => {
+                  message.error("Failed to update template")
+                  console.log(error)
+                })
             })
           }
         }
@@ -414,20 +461,25 @@ class Tool extends React.Component {
           criteriaName: critName,
         }],
       }
-      this.highlightComment(c)
-      const comments = [...this.state.comments, c]
-      comments.sort((a, b) => a.y - b.y)
-      this.adjustPositions(comments) //Avoid overlapping comments
-      this.setState({
-        comments: comments,
-      })
         //MAKE THE COMMENT POST REQUEST
-      const p = this.state.pages.filter(p => p.name === c.sectionName)
+      const p = this.state.pages.filter(p => p.name === sectionName)
       if(p.length > 0) {
-        const id = p[0].id
-        postComment(id, c)
+        const pageid = p[0].id
+        postComment(pageid, c)
           .then((response) => {
+            console.log(response)
             message.success("Posted comment")
+            const commentID = response.data.content.id
+            c.id = commentID
+            c.page = pageid
+            this.highlightComment(c)
+            console.log(c)
+            const comments = [...this.state.comments, c]
+            comments.sort((a, b) => a.y - b.y)
+            this.adjustPositions(comments) //Avoid overlapping comments
+            this.setState({
+              comments: comments,
+            })
           })
           .catch((error) => {
             message.error(error.message)
@@ -449,10 +501,32 @@ class Tool extends React.Component {
           this.setState({
             comments: this.state.comments,
           })
+          patchComment(c.id, {points: c.points, commentArray: c.commentArray})
+            .then((response) => {
+              message.success("Additional comment added")
+            })
+            .catch((error) => {
+              message.error(error.message)
+            })
           break;
         }
       }
     }
+  }
+
+  getSubmissionTemplatePatch = () => {
+    const toPatch = []
+    for(const s of this.state.phaseSections) {
+      const toAdd = {
+        name: s.name,
+        ptsEarned: s.ptsEarned,
+        ptsPossible: s.ptsPossible,
+        criteria: s.criteria,
+        currComments: s.currComments
+      } 
+      toPatch.push(toAdd)
+    }
+    return toPatch
   }
 
   anotherComment = (sectionName, y) => {
@@ -479,11 +553,21 @@ class Tool extends React.Component {
   }
 
   adjustPositions(comments) {
+    let patchReqs = []
     for(var i = 0; i < comments.length - 1; i++) {
       if(comments[i].y > comments[i+1].y - 30) {
         comments[i+1].y = comments[i].y + 30
+        let req = patchComment(comments[i+1].id, {y: comments[i+1].y})
+        patchReqs.push(req)
       }
     }
+    Promise.all(patchReqs) 
+      .then((response) => {
+        message.success("Updated positions");
+      })
+      .catch((error) => {
+        message.error(error.message);
+      });
   }
 
   highlightComment = (comment) => { //go through the innerHTML of the div inside the body
@@ -647,6 +731,16 @@ class Tool extends React.Component {
     }
   }
 
+  editCommentText = (y, newCommentText, index) => {
+    const commentsCopy = this.state.comments
+    for(const comment of commentsCopy) {
+      if(comment.y === y) {
+        comment.commentArray[index].comment = newCommentText
+      }
+    }
+    this.setState({comments: commentsCopy})
+  }
+
   deleteAdditionalComment = (y, index) => { //pass to Comment
     for(const comment of this.state.comments) {
       if(comment.y === y) {
@@ -660,15 +754,6 @@ class Tool extends React.Component {
     for(const comment of this.state.comments) {
       if(comment.y === y) {
         comment.commentArray[index].additionalComment = text
-        patchComment(comment.id, {commentArray: comment.commentArray})
-          .then((response) => {
-            message.success("Patched successfully")
-            console.log(response)
-          })
-          .catch((error) => {
-            message.error(error.message)
-            console.log(error.response)
-          })
       }
     }
     this.setState({comments: this.state.comments})
@@ -683,6 +768,7 @@ class Tool extends React.Component {
         const n = comment.n 
         const sectionName = comment.sectionName
         const critName = comment.commentArray[index].criteriaName
+        const commentText = comment.commentArray[index].comment
         const pts = comment.commentArray[index].commentPoints
         console.log(pts)
         comment.commentArray.splice(index, 1)
@@ -702,11 +788,29 @@ class Tool extends React.Component {
         this.setState({ comments: this.state.comments })
         for(const s of this.state.phaseSections) {
           if(s.name === sectionName) {
+            for(let i = 0; i < s.currComments.length; i++) {
+              if(s.currComments[i].value === pts && s.currComments[i].text.fullText === commentText) {
+                s.currComments.splice(i, 1)
+                break; //wont match if comment text has been edited
+              }
+            }
             for(const c of s.criteria) {
               if(c.name === critName) {
                 s.ptsEarned -= pts;
                 c.ptsEarned -= pts;
-                this.setState({phaseSections: this.state.phaseSections})
+                this.setState({phaseSections: this.state.phaseSections}, () => {
+                  const patchTemplate = this.getSubmissionTemplatePatch()
+                  const params = {template: patchTemplate}
+                  console.log(params)
+                  updateSubmission(this.state.submissionID, params)
+                    .then((response) => {
+                      message.success("Updated template")
+                    })
+                    .catch((error) => {
+                      message.error("Failed to update template")
+                      console.log(error)
+                    })
+                })
                 break;
               }
             }
@@ -717,19 +821,70 @@ class Tool extends React.Component {
     }
   }
 
+  saveComments = () => {
+    let patchReqs = []
+    console.log(this.state.comments)
+    for(const c of this.state.comments) {
+      let req = patchComment(c.id, c)
+      patchReqs.push(req)
+    }
+    Promise.all(patchReqs) 
+      .then((response) => {
+        message.success("Saved all comments");
+      })
+      .catch((error) => {
+        message.error(error.message);
+      });
+  }
+
   render() {
+    const menu = (
+      <Menu>
+        {this.state.pages.map((p) => {
+          if(p.name !== "Landing Page") {
+            const url = "https://sites.google.com" + p.url
+            return (
+              <Menu.Item>
+                <a target="_blank" href={url}>
+                  {p.name}
+                </a>
+              </Menu.Item>
+            )
+          } else {
+            return (
+              <Menu.Item>
+                <a target="_blank" href={p.url}>
+                  {p.name}
+                </a>
+              </Menu.Item>
+            )
+          }
+        })}
+      </Menu>
+    );
+
     return (
       <Layout>
         <Header
           style={{ 
-            height: "50px",
+            height: "53px",
             width: "100%",
             backgroundColor: "#1890FF",
             position: "fixed",
             zIndex: 1
           }}
         >
-          Section
+          <div>
+            <Dropdown overlay={menu} style={{display:"inline-block"}}>
+              <a style={{color:"black"}}>
+                Go directly to submission site <DownOutlined />
+              </a>
+            </Dropdown>
+            <div style={{display:"inline-block", float:"right"}}>
+              <Button style={{display:"inline-block", marginRight:"5px"}} icon={<ReloadOutlined />}></Button>
+              <Button style={{display:"inline-block"}} onClick={this.saveComments}>Save</Button>
+            </div>
+          </div>
         </Header>
         <Layout>
           <Sider
@@ -881,6 +1036,7 @@ class Tool extends React.Component {
                         anotherComment={this.anotherComment}
                         deleteAdditionalComment={this.deleteAdditionalComment}
                         deleteComment={this.deleteComment}
+                        editCommentText={this.editCommentText}
                       ></Comment>
                       <br></br>
                     </div>

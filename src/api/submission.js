@@ -11,6 +11,10 @@ export const getSubmission = (group_name, assignment_name, semester) => {
     "&semester=" + semester);
 }
 
+export const updateSubmission = (id, params) => {
+  return axiosConfig.patch("submission/update_submission?id=" + id, params);
+}
+
 export const getSubmissionPages = (group_name, assignment_name, semester) => {
   return axiosConfig.get("submission/get_pages" + 
     "?group_name=" + group_name + 
