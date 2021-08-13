@@ -12,12 +12,14 @@ import {
   Select,
   message,
   Dropdown,
+  Divider
 } from "antd";
 import {
   CaretLeftOutlined,
   CaretRightOutlined,
   DownOutlined, 
-  ReloadOutlined
+  ReloadOutlined,
+  ExportOutlined,
 } from "@ant-design/icons";
 
 import CSRFToken from "../component/CSRFToken";
@@ -37,6 +39,8 @@ import {
   postSubmission,
   updateSubmission
 } from '../api/submission'
+
+import cryptoRandomString from 'crypto-random-string';
 
 const { SubMenu } = Menu;
 const { Header, Sider, Content } = Layout;
@@ -107,6 +111,7 @@ class Tool extends React.Component {
         }*/
       pages: [],
       currentSection: "Landing Page",
+      exportID: "",
     }
   }
 
@@ -131,16 +136,17 @@ class Tool extends React.Component {
     const phase = this.state.phase.split(" ").join("-").toLowerCase()
     let url = baseURL + sem + "-team-" + team + "/" + phase + "?authuser=0"
     url = encodeURIComponent(url)
-    getSubmission(team, this.state.phase, sem)
+    getSubmission({group_name:team, assignment_name:this.state.phase, semester:sem})
       .then((submissionResponse) => {
         const submissionObj = JSON.parse(submissionResponse.data.content[0])
         const submissionID = submissionObj.id
+        const exportID = submissionObj.export_id
         console.log(submissionObj)
         getRubricByName(this.state.phase)
           .then((rubricResponse) => {
             const rubricObj = JSON.parse(rubricResponse.data.content[0].rubric)
             console.log(rubricObj)
-            getSubmissionPages(team, this.state.phase, sem)
+            getSubmissionPages(submissionID)//this.state.phase, sem)
               .then((pagesResponse) => {
                 const pages = pagesResponse.data.content
                 console.log(pages)
@@ -177,7 +183,8 @@ class Tool extends React.Component {
                 this.setState({
                   phaseSections: phaseSections,
                   pages: pages,
-                  submissionID: submissionID
+                  submissionID: submissionID,
+                  exportID: exportID,
                 })
                 //LOAD THE ACTUAL HTML
                 const landingPg = pages.filter(p => p.name === "Landing Page")[0]
@@ -203,12 +210,14 @@ class Tool extends React.Component {
           getRubricByName(this.state.phase)
             .then((response) => {
               const rubric_id = response.data.content[0].id
+              const export_id = cryptoRandomString({length: 15})
               const params = {
                 encoded_url: url,
                 group: ["Jack"],
                 group_name: team,
                 assignment_id: rubric_id,
                 semester: sem,
+                export_id: export_id
               }
               postSubmission(params)
                 .then((response) => {
@@ -837,6 +846,11 @@ class Tool extends React.Component {
       });
   }
 
+  exportSubmission = () => {
+    const exportID = this.state.exportID
+    window.open('submission/'+ exportID, '_blank').focus();
+  }
+
   render() {
     const menu = (
       <Menu>
@@ -989,6 +1003,18 @@ class Tool extends React.Component {
                 )
               })}
             </div>
+            <p></p>
+            <Button
+              type="primary"
+              icon={<ExportOutlined />}
+              shape="round"
+              onClick={this.exportSubmission}
+              style={{float:"right", marginRight:"5px"}}
+            >
+              Export
+            </Button>
+            <Divider/>
+            <div style={{color:"black"}}>***Grading Tool 2021***</div>
           </Sider>
           <Content
             id="content"

@@ -3,12 +3,10 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { Switch, Route } from "react-router-dom";
 
 import "./asset/css/App.css";
-import { Layout } from "antd";
 
 import Tool from "./page/Tool";
 import Submission from "./page/Submission";
-
-const { Header, Footer } = Layout;
+import Export from "./page/Export";
 
 class App extends React.Component {
 
@@ -18,7 +16,8 @@ class App extends React.Component {
       <Router>
         <Switch>
           <Route path="/tool" component={Tool} />
-          <Route path="/submission" component={Submission}/>
+          <Route path="/create" component={Submission}/>
+          <Route path="/submission/:id" component={Export}/>
         </Switch>
       </Router>
     );
