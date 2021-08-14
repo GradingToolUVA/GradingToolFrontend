@@ -8,6 +8,7 @@ import {
   Select,
 } from "antd";
 
+import CSRFToken from '../component/CSRFToken'
 import { postRubric, getRubricByName } from '../api/rubric'
 import { postSubmission } from '../api/submission'
 
@@ -1783,6 +1784,7 @@ class Submission extends React.Component {
   render() {
     return (
       <div>
+        <CSRFToken />
         <Button onClick={this.makeRubric}>Make Rubrics</Button>
         <Form
           colon={true}

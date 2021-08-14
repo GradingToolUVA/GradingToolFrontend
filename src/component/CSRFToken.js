@@ -1,5 +1,6 @@
+import { message } from "antd";
 import React from "react";
-import axios from "axios";
+import axiosConfig from '../config/axiosConfig';
 
 class CSRFToken extends React.Component {
   constructor(props) {
@@ -18,8 +19,9 @@ class CSRFToken extends React.Component {
 
   fetchData = async () => {
     try {
-      let response = await axios.get(`http://127.0.0.1:8000/gradetool/csrf_cookie`, {withCredentials: true});
+      let response = await axiosConfig.get('/gradetool/csrf_cookie');
       console.log(response)
+      message.success("Got cookie")
     } catch (err) {
       console.log(err)
     }
