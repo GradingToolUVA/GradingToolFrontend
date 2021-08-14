@@ -29,6 +29,7 @@ export default class Export extends React.Component {
     this.state = {
       submission: {},
       commentedPages: [],
+      commentsToDisplay: 0 //index in commentedPages to display correct set of comments
     }
   }
 
@@ -44,10 +45,14 @@ export default class Export extends React.Component {
             const pages = pagesResponse.data.content
             console.log(pages)
             const commentedPages = []
+            let landingPgIndex = 0
             const getCommentsReqs = []
-            for(const p of pages) {
-              let request = getComments(p.id)
-              commentedPages.push({page: p})
+            for(var i = 0; i < pages.length; i++) {
+              commentedPages.push({page: pages[i]})
+              if(pages[i].name === "Landing Page") {
+                landingPgIndex = i
+              }
+              let request = getComments(pages[i].id)
               getCommentsReqs.push(request)
             }
             Promise.all(getCommentsReqs)
@@ -55,8 +60,18 @@ export default class Export extends React.Component {
                 response.map((res, index) => commentedPages[index].comments = res.data.content)
                 this.setState({
                   submission: submissionObj,
-                  commentedPages: commentedPages
-                }, () => {console.log(this.state.commentedPages)})
+                  commentedPages: commentedPages,
+                  commentsToDisplay: landingPgIndex
+                }, () => {
+                  console.log(this.state.commentedPages)
+                  // var submission = document.getElementById('submission');
+                  // var iframe = submission.contentWindow || ( submission.contentDocument.document || submission.contentDocument);
+                  // const __html = this.state.commentedPages[this.state.commentsToDisplay].page.html
+                  // iframe.document.open();
+                  // iframe.document.write(__html);
+                  // iframe.document.close();
+                  this.loadPage({key:this.state.commentsToDisplay})
+                })
               })
               .catch((err) => console.log(err));
           })
@@ -67,6 +82,52 @@ export default class Export extends React.Component {
       .catch((error) => {
         message.error(error.message)
       })
+  }
+
+  loadHandler = () => { //on iFrame load
+    //set the height to fit content
+    var submission = document.getElementById("submission");
+    submission.style.height = submission.contentWindow.document.body.scrollHeight + 'px'
+  }
+
+  loadPage = (item) => {
+    const pageToLoad = this.state.commentedPages[item.key]
+    var submission = document.getElementById('submission');
+    var iframe = submission.contentWindow || ( submission.contentDocument.document || submission.contentDocument);
+    const __html = pageToLoad.page.html
+    iframe.document.open();
+    iframe.document.write(__html);
+    iframe.document.close();
+    for(const c of pageToLoad.comments) {
+      this.highlightComment(c)
+    }
+    this.setState({commentsToDisplay: item.key})
+  }
+
+  highlightComment = (comment) => { //go through the innerHTML of the div inside the body
+    var submission = document.getElementById("submission");
+    var iframeHTML = submission.contentDocument || submission.contentWindow.document;
+    //console.log(iframeHTML.childNodes)
+    const nodes = iframeHTML.childNodes[0].childNodes[1].childNodes[0] //gets to the html->body->div
+    let innerHTML = nodes.innerHTML //innerHTML of div wrapper
+    for(var i = 0; i < comment.text.length; i++) {
+      const text = comment.text[i].text //HERE
+      var index = this.nthIndexOf(innerHTML, text, comment.text[i].n);
+      if (index >= 0) { 
+        innerHTML = innerHTML.substring(0,index) + '<span style="background-color: #BDB76B">' + innerHTML.substring(index,index+text.length) + '</span>' + innerHTML.substring(index + text.length);
+        nodes.innerHTML = innerHTML;
+        //update the state too because the html nodes have changed
+      }
+    }
+  }
+
+  nthIndexOf(str, match, n){ //Find index of nth occurance of match in str
+    let i= -1;
+    while(n-- && i++ < str.length) {
+      i = str.indexOf(match, i);
+      if (i < 0) { break }
+    }
+    return i;
   }
 
   render() {
@@ -85,7 +146,7 @@ export default class Export extends React.Component {
         </Header>
         <Layout>
           <Sider
-            width="18%"
+            width="23%"
             style={{
               overflow: "auto",
               height: "100vh",
@@ -94,7 +155,18 @@ export default class Export extends React.Component {
               paddingTop: "60px"
             }}
           >
-
+            <Menu
+              theme="dark"
+              onClick={this.loadPage}
+            >
+              {this.state.commentedPages.map((cp, index) => {
+                return (
+                  <Menu.Item key={index}>
+                    {cp.page.name}
+                  </Menu.Item>
+                )
+              })}
+            </Menu>
           </Sider>
           <Content
             id="content"
@@ -103,36 +175,34 @@ export default class Export extends React.Component {
               //overflow: "initial",
               backgroundColor: "#ffffff",
               //padding: "20px 250px 100px",
-              paddingLeft: "18%"//"240px"
+              paddingLeft: "23%"//"240px"
             }}
           >
             <Row
               style={{position:"relative"}}
             >
-              <Col span={16}>
+              <Col span={17}>
                 <iframe
                   id='submission'
                   width="100%"
                   height="100%"
                   src='../submissions/dummy.html'
-                  //onLoad={this.loadHandler}
-                  //onMouseDown={this.handleMouseDown}
-                  //onMouseUp={this.getText}
+                  onLoad={this.loadHandler}
                 />
               </Col>
-              <Col id="one" span={8}>
-                {this.state.commentedPages.map((cp) => {
+              <Col id="one" span={7}>
+                {this.state.commentedPages[this.state.commentsToDisplay]?.comments.map((c) => {
                   //const yPos = comment.y + "px"
                   return(
                     <div
                       style={{
                         position:"absolute",
-                        //top:comment.y,
+                        top: c.y,
                         paddingLeft:"10px"
                       }}
                     >
                       <ExportComment 
-
+                        comment={c}
                       ></ExportComment>
                       <br></br>
                     </div>
@@ -148,9 +218,45 @@ export default class Export extends React.Component {
 }
 
 class ExportComment extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      visible: false,
+    }
+  }
+
+  displayComment = () => {
+    return (
+      <div>
+        {this.props.comment.commentArray?.map((c, index) => {
+          return (
+            <div className="commentContent">
+              <b>{c.comment} ({c.commentPoints})</b>
+              <p>{c.additionalComment}</p>
+              <hr/>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  handleVisibility = () => {
+    this.setState({visible: this.state.visible ? false : true})
+  }
+
   render() {
     return (
-      <p>YESIR</p>
+      <Popover 
+        content={this.displayComment}
+        placement="rightTop"
+        trigger="click"
+        visible={this.state.visible}
+      >
+        <Button danger="true" size="small" onClick={this.handleVisibility}>
+          {this.props.comment.points}
+        </Button>
+      </Popover>
     )
   }
 }

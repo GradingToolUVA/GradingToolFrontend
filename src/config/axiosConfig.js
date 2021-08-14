@@ -4,7 +4,8 @@ import Cookies from 'js-cookie';
 const instance = axios.create({
   //where we make our configurations
   //baseURL: "http://localhost:8000"
-  baseURL: "http://127.0.0.1:8000"
+  //baseURL: "http://127.0.0.1:8000"
+  baseURL: "https://gradingtoolbackend.herokuapp.com/"
 });
 
 const csrftoken = Cookies.get('csrftoken')

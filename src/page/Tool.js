@@ -65,10 +65,11 @@ class Tool extends React.Component {
       submissionID: 0,
       comments: [], //array of objects containing the comment and other data
         /*{ 
+            id:,
+            pageid:,
             x:, 
             y:, //unique identifier
-            text:,
-            n:, //nth occurance of the associated text
+            text: [{text:, n:}]
             sectionName:,
             points:,
             commentArray: [{}]
@@ -281,6 +282,8 @@ class Tool extends React.Component {
     submission.style.height = submission.contentWindow.document.body.scrollHeight + 'px'
       //populate submissionNodes
     var iframeHTML = submission.contentDocument || submission.contentWindow.document;
+    console.log("*******")
+    console.log(iframeHTML.childNodes)
     const nodes = iframeHTML.childNodes[0]?.childNodes //gets to the [head, body] level
     const bodyNodes = nodes[1]?.childNodes[0]?.childNodes //body->div->sections
     console.log(typeof bodyNodes)
