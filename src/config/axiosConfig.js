@@ -14,17 +14,15 @@ instance.defaults.withCredentials = true
 let csrftoken = '';
 instance.get('/gradetool/csrf_cookie')
   .then((response) => {
-    message.success("Got cookies.")
-    console.log(response)
+    // message.success("Got cookies.")
+    // console.log(response)
     csrftoken = response.headers["x-csrftoken"]
-    console.log(csrftoken)
+    instance.defaults.headers.common["x-csrftoken"] = csrftoken
   })
   .catch((error) => {
     message.error("Failed to get cookies.")
     console.log(error)
   })
-
-instance.defaults.headers.common["x-csrftoken"] = csrftoken
 
 /*const csrftoken = Cookies.get('csrftoken')
 instance.defaults.withCredentials = true
