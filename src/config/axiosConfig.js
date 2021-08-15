@@ -10,14 +10,14 @@ const instance = axios.create({
 });
 
 const csrftoken = '';
-try {
-  let response = await axios.get('/gradetool/csrf_cookie');
-  console.log(response.headers)
-  csrftoken = 'set'
-  message.success("Got cookies.")
-} catch (err) {
-  message.error("Failed to get cookies.")
-}
+axios.get('/gradetool/csrf_cookie')
+  .then((response) => {
+    message.success("Got cookies.")
+    console.log(response.headers)
+  })
+  .catch((error) => {
+    message.error("Failed to get cookies.")
+  })
 
 instance.defaults.withCredentials = true
 instance.defaults.headers.common["x-csrftoken"] = csrftoken
