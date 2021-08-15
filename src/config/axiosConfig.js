@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from 'js-cookie';
+import message from 'antd';
 
 const instance = axios.create({
   //where we make our configurations
@@ -8,11 +9,24 @@ const instance = axios.create({
   baseURL: "https://gradingtoolbackend.herokuapp.com/"
 });
 
-const csrftoken = Cookies.get('csrftoken')
+const csrftoken = '';
+try {
+  let response = await axios.get('/gradetool/csrf_cookie');
+  console.log(response.headers)
+  csrftoken = 'set'
+  message.success("Got cookies.")
+} catch (err) {
+  message.error("Failed to get cookies.")
+}
+
+instance.defaults.withCredentials = true
+instance.defaults.headers.common["x-csrftoken"] = csrftoken
+
+/*const csrftoken = Cookies.get('csrftoken')
 instance.defaults.withCredentials = true
 //instance.defaults.xsrfCookieName = 'csrftoken'
 //instance.defaults.xsrfHeaderName = 'X-CSRFToken'
-instance.defaults.headers.common["x-csrftoken"] = csrftoken;
+instance.defaults.headers.common["x-csrftoken"] = csrftoken;*/
 
 /* Possible interceptor use
 instance.interceptors.request.use(function (config) {
