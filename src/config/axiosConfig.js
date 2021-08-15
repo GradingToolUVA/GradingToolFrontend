@@ -9,18 +9,19 @@ const instance = axios.create({
   baseURL: "https://gradingtoolbackend.herokuapp.com/"
 });
 
+instance.defaults.withCredentials = true
+
 const csrftoken = '';
-axios.get('/gradetool/csrf_cookie')
+instance.get('/gradetool/csrf_cookie')
   .then((response) => {
     message.success("Got cookies.")
-    console.log(response.headers)
+    console.log(response)
   })
   .catch((error) => {
     message.error("Failed to get cookies.")
     console.log(error)
   })
 
-instance.defaults.withCredentials = true
 instance.defaults.headers.common["x-csrftoken"] = csrftoken
 
 /*const csrftoken = Cookies.get('csrftoken')
