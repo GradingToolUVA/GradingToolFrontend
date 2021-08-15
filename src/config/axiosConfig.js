@@ -1,6 +1,6 @@
 import axios from "axios";
 import Cookies from 'js-cookie';
-import message from 'antd';
+import {message} from "antd";
 
 const instance = axios.create({
   //where we make our configurations
@@ -17,6 +17,7 @@ axios.get('/gradetool/csrf_cookie')
   })
   .catch((error) => {
     message.error("Failed to get cookies.")
+    console.log(error)
   })
 
 instance.defaults.withCredentials = true
