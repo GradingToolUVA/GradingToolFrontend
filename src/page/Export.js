@@ -108,8 +108,8 @@ export default class Export extends React.Component {
     var submission = document.getElementById("submission");
     var iframeHTML = submission.contentDocument || submission.contentWindow.document;
     //console.log(iframeHTML.childNodes)
-    const nodes = iframeHTML.childNodes[0].childNodes[1].childNodes[0] //gets to the html->body->div
-    let innerHTML = nodes.innerHTML //innerHTML of div wrapper
+    const nodes = iframeHTML.childNodes[0]?.childNodes[1]?.childNodes[0] //gets to the html->body->div
+    let innerHTML = nodes?.innerHTML //innerHTML of div wrapper
     for(var i = 0; i < comment.text.length; i++) {
       const text = comment.text[i].text //HERE
       var index = this.nthIndexOf(innerHTML, text, comment.text[i].n);

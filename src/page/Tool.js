@@ -12,7 +12,8 @@ import {
   Select,
   message,
   Dropdown,
-  Divider
+  Divider,
+  Typography
 } from "antd";
 import {
   CaretLeftOutlined,
@@ -47,6 +48,7 @@ const { Header, Sider, Content } = Layout;
 const { TextArea } = Input;
 const { Panel } = Collapse;
 const { Option } = Select;
+const { Paragraph } = Typography;
 
 class Tool extends React.Component {
   constructor(props) {
@@ -59,6 +61,8 @@ class Tool extends React.Component {
       yOffset: 0,
       xHighlight: 0,
       yHighlight: 0,
+      highlight_textString: "",
+      ellipsisExpanded: false,
       highlight_text: [],//"",
       n: 0, //highlighted text is the nth occurance of that text in the submission
       submissionNodes: [], //the nodes of the html of the submission
@@ -176,8 +180,20 @@ class Tool extends React.Component {
                     extras.push(section)
                   }
                 }
-                for(const p of pages) {
+                for(const p of pages) { //either this or the above will populate the extras
                   //check if the section exists
+                  if(phaseSections.filter(s => s.name === p.name).length === 0) {
+                    const toAdd = {
+                      name: p.name,
+                      ptsEarned: 0,
+                      ptsPossible: 0,
+                      criteria: [],
+                      currComments: [],
+                      url: p.url,
+                      html: p.html
+                    } 
+                    extras.push(toAdd)
+                  }
                 }
                 console.log(phaseSections)
                 console.log(extras)
@@ -382,6 +398,7 @@ class Tool extends React.Component {
     this.setState({
       xHighlight: Math.round(this.state.x),
       yHighlight: Math.round(this.state.y),
+      highlight_textString: text
     })
   }
 
@@ -833,6 +850,10 @@ class Tool extends React.Component {
     }
   }
 
+  toggleEllipsis = () => {
+    this.setState({ellipsisExpanded: this.state.ellipsisExpanded ? false : true})
+  }
+
   saveComments = () => {
     let patchReqs = []
     console.log(this.state.comments)
@@ -965,7 +986,14 @@ class Tool extends React.Component {
             <p/>
             <div className="siderElementContainer">
               <p>System:</p>
-              <TextArea style={{ backgroundColor: "black", color: "white" }} autoSize/>
+              <div style={{border:"1px solid white", maxWidth:"100%", wordWrap: "break-word"}}>
+                <Paragraph ellipsis={this.state.ellipsisExpanded === false ? true : false} 
+                  style={{color:"white"}}
+                >
+                  {this.state.highlight_textString}
+                </Paragraph>
+              </div>
+              <Button size="small" type="link" style={{float:"right"}} onClick={this.toggleEllipsis}>{this.state.ellipsisExpanded ? "less" : "more"}</Button>
               <p/>
             </div>
             <div className="siderElementContainer">

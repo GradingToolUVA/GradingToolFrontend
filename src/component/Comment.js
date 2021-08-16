@@ -26,7 +26,7 @@
   import '../asset/css/ToolContent.css'
 
   const { SubMenu } = Menu;
-  const { Paragraph, Title } = Typography;
+  const { Text, Paragraph, Title } = Typography;
   const { TextArea } = Input;
   const { Panel } = Collapse;
   const { confirm } = Modal;
@@ -84,7 +84,7 @@
                   <Button size="small" icon={<CommentOutlined />}style={{float:"right",marginRight:"3px"}}/>
                 </Popover>
                 <br/>
-                <Title level={5} editable={{tooltip:false, onChange: (string) => {this.props.editCommentText(this.props.comment.y, string, index)}}}>{c.comment}</Title>
+                <Text strong editable={{tooltip:false, onChange: (string) => {this.props.editCommentText(this.props.comment.y, string, index)}}}>{c.comment}</Text>
                 {c.additionalComment !== ""
                   ? <Paragraph editable={{tooltip:false, onChange: (string) => {this.editAdditionalComment(string, index)}}}>
                       {c.additionalComment}
