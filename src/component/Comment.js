@@ -18,9 +18,10 @@
   import {
     DeleteOutlined,
     ExclamationCircleOutlined,
-    CheckOutlined,
-    CloseOutlined,
-    CommentOutlined
+    CheckSquareTwoTone,
+    CloseSquareTwoTone,
+    CommentOutlined,
+    PlusSquareOutlined
   } from "@ant-design/icons";
 
   import '../asset/css/ToolContent.css'
@@ -84,7 +85,7 @@
                   <Button size="small" icon={<CommentOutlined />}style={{float:"right",marginRight:"3px"}}/>
                 </Popover>
                 <br/>
-                <Text strong editable={{tooltip:false, onChange: (string) => {this.props.editCommentText(this.props.comment.y, string, index)}}}>{c.comment}</Text>
+                <Text strong editable={{tooltip:false, onChange: (string) => {this.props.editCommentText(this.props.comment.y, string, index)}}}>{c.comment}</Text><Button size="small" icon={<PlusSquareOutlined/>} style={{border:"none"}} onClick={() => {this.addingExtraComment(index)}}></Button>
                 {c.additionalComment !== ""
                   ? <Paragraph editable={{tooltip:false, onChange: (string) => {this.editAdditionalComment(string, index)}}}>
                       {c.additionalComment}
@@ -101,10 +102,9 @@
                               />
                               <div style={{color:"white", paddingTop:"4px", paddingBottom:"4px"}}>
                                 <Button 
-                                  type="primary"
                                   size="small" 
-                                  style={{float:"right"}}
-                                  icon={<CheckOutlined />}
+                                  style={{float:"right", border:"none"}}
+                                  icon={<CheckSquareTwoTone twoToneColor="#52c41a"/>}
                                   onClick={() => {
                                     const text = this.state.additionalComments[index];
                                     //console.log(text)
@@ -114,16 +114,17 @@
                                 <Button 
                                   danger
                                   size="small" 
-                                  style={{float:"right"}}
-                                  icon={<CloseOutlined />}
+                                  style={{float:"right", border:"none"}}
+                                  icon={<CloseSquareTwoTone twoToneColor="#eb2f96"/>}
                                   onClick={() => {
                                     this.cancelAdditionalComment(index)
                                   }}
                                 />
                               </div>
+                              <p> </p>
                             </div>
                           )
-                        : <Button size="small" type="link" onClick={() => {this.addingExtraComment(index)}}>Add extra comment</Button>
+                        : <br/>//<Button size="small" type="link" onClick={() => {this.addingExtraComment(index)}}>Add extra comment</Button>
                       )
                     ]
                 }

@@ -13,7 +13,8 @@ import {
   message,
   Dropdown,
   Divider,
-  Typography
+  Typography,
+  Modal
 } from "antd";
 import {
   CaretLeftOutlined,
@@ -48,7 +49,7 @@ const { Header, Sider, Content } = Layout;
 const { TextArea } = Input;
 const { Panel } = Collapse;
 const { Option } = Select;
-const { Paragraph } = Typography;
+const { Paragraph, Title } = Typography;
 
 class Tool extends React.Component {
   constructor(props) {
@@ -117,6 +118,7 @@ class Tool extends React.Component {
       pages: [],
       currentSection: "Landing Page",
       exportID: "",
+      matchPhasesModalVisible: false,
     }
   }
 
@@ -193,15 +195,17 @@ class Tool extends React.Component {
                       html: p.html
                     } 
                     extras.push(toAdd)
+                    //do we need a array with all extras and existings, in order? SORTING
                   }
                 }
                 console.log(phaseSections)
-                console.log(extras)
+                console.log(extras) //extras should always have 1, the landing page
                 this.setState({
                   phaseSections: phaseSections,
                   pages: pages,
                   submissionID: submissionID,
                   exportID: exportID,
+                  matchPhasesModalVisible: (submissionObj.matched && extras.length > 1) ? false : false//true
                 })
                 //LOAD THE ACTUAL HTML
                 const landingPg = pages.filter(p => p.name === "Landing Page")[0]
@@ -223,6 +227,7 @@ class Tool extends React.Component {
           })
       })
       .catch((error) => {
+        console.log(error)
         if(error.response.status === 400) { //then create the submission    
           getRubricByName(this.state.phase)
             .then((response) => {
@@ -639,13 +644,15 @@ class Tool extends React.Component {
 
   changeSemester = (value) => {
     this.setState({
-      semester: value
+      semester: value,
+      comments: []
     }, () => {this.loadSubmission()})
   }
   changeTeam = (value) => {
     const index = this.state.teams.indexOf(value)
     this.setState({
-      team: index
+      team: index,
+      comments: []
     }, () => {this.loadSubmission()})
   }
   changeTeamBack = () => {
@@ -656,7 +663,8 @@ class Tool extends React.Component {
       index = this.state.team - 1
     }
     this.setState({
-      team: index
+      team: index,
+      comments: []
     }, () => {this.loadSubmission()})
   }
   changeTeamNext = () => {
@@ -667,12 +675,14 @@ class Tool extends React.Component {
       index = this.state.team + 1
     }
     this.setState({
-      team: index
+      team: index,
+      comments: []
     }, () => {this.loadSubmission()})
   }
   changePhase = (value) => {
     this.setState({
-      phase: value
+      phase: value,
+      comments: []
     }, () => {this.loadSubmission()})
   }
 
@@ -854,7 +864,7 @@ class Tool extends React.Component {
     this.setState({ellipsisExpanded: this.state.ellipsisExpanded ? false : true})
   }
 
-  saveComments = () => {
+  saveComments = () => { //save comments and ALSO the points total
     let patchReqs = []
     console.log(this.state.comments)
     for(const c of this.state.comments) {
@@ -868,6 +878,13 @@ class Tool extends React.Component {
       .catch((error) => {
         message.error(error.message);
       });
+    updateSubmission(this.state.submissionID, {template: this.getSubmissionTemplatePatch()})
+      .then((response) => {
+        message.success("submission updated")
+      })
+      .catch((error) => {
+        message.error("failed to update submission")
+      })
   }
 
   exportSubmission = () => {
@@ -1057,6 +1074,12 @@ class Tool extends React.Component {
               paddingLeft: "23%"//"240px"
             }}
           >
+            <Modal visible={this.state.matchPhasesModalVisible}>
+              <Title level={5}>There are more sections in this submission than are required by the rubric. They may need to be matched to the rubric. If not, mark the section as 'extra'</Title>
+              <Select>
+                <Option>A Choice</Option>
+              </Select>
+            </Modal>
             <Row
               style={{position:"relative"}}
             >
