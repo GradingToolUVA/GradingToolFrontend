@@ -14,7 +14,8 @@ import {
   Dropdown,
   Divider,
   Typography,
-  Modal
+  Modal,
+  Form
 } from "antd";
 import {
   CaretLeftOutlined,
@@ -22,6 +23,8 @@ import {
   DownOutlined, 
   ReloadOutlined,
   ExportOutlined,
+  GlobalOutlined,
+  SaveOutlined
 } from "@ant-design/icons";
 
 import CSRFToken from "../component/CSRFToken";
@@ -39,7 +42,8 @@ import {
   patchComment,
   deleteComment, 
   postSubmission,
-  updateSubmission
+  updateSubmission,
+  updatePage
 } from '../api/submission'
 
 import cryptoRandomString from 'crypto-random-string';
@@ -115,10 +119,12 @@ class Tool extends React.Component {
             }],
           currComments: this is the current comments for this section
         }*/
+      extras: [],
       pages: [],
       currentSection: "Landing Page",
       exportID: "",
       matchPhasesModalVisible: false,
+      rubric: {}
     }
   }
 
@@ -179,13 +185,14 @@ class Tool extends React.Component {
                   if(rubricObj.template.filter(r => r.name === section.name).length > 0) { //is not extra section  
                     phaseSections.push(toAdd)
                   } else { //is an extra section
-                    extras.push(section)
+                    //extras.push(section) probably dont need this
                   }
                 }
                 for(const p of pages) { //either this or the above will populate the extras
                   //check if the section exists
                   if(phaseSections.filter(s => s.name === p.name).length === 0) {
                     const toAdd = {
+                      id: p.id,
                       name: p.name,
                       ptsEarned: 0,
                       ptsPossible: 0,
@@ -194,18 +201,20 @@ class Tool extends React.Component {
                       url: p.url,
                       html: p.html
                     } 
-                    extras.push(toAdd)
+                    extras.push(toAdd) //EXTRAS TEMPLATE differs slightly from phaseSection object, will contain the associated pageID because its guaranteed to have one
                     //do we need a array with all extras and existings, in order? SORTING
                   }
                 }
                 console.log(phaseSections)
-                console.log(extras) //extras should always have 1, the landing page
+                console.log(extras) //extras should always have >= 1, the landing page
                 this.setState({
                   phaseSections: phaseSections,
+                  extras: extras,
                   pages: pages,
                   submissionID: submissionID,
                   exportID: exportID,
-                  matchPhasesModalVisible: (submissionObj.matched && extras.length > 1) ? false : false//true
+                  rubric: rubricObj,
+                  matchPhasesModalVisible: (submissionObj.matched && extras.length > 1) ? false : true
                 })
                 //LOAD THE ACTUAL HTML
                 const landingPg = pages.filter(p => p.name === "Landing Page")[0]
@@ -892,6 +901,49 @@ class Tool extends React.Component {
     window.open('submission/'+ exportID, '_blank').focus();
   }
 
+  cancelMatching = () => {
+    this.setState({matchPhasesModalVisible: false})
+  }
+
+  finishMatching = (values) => { //values -> [{pageName: string of what the pageName should be / indicator of extra section}]
+    console.log(values)
+    const newPhaseSections = [...this.state.phaseSections]
+    for(const pgName in values) {
+      if(values[pgName] === "extra_section") {
+        const ex = this.state.extras.filter(e => e.name === pgName)[0]
+        newPhaseSections.push(ex)
+      } else {
+        const pgId = this.state.extras.filter(e => e.name === pgName)[0].id
+        const params = {
+          name: values[pgName]
+        }
+        updatePage(pgId, params)
+          .then((response) => {
+            message.success("updated rubric detail")
+          })
+          .catch((error) => {
+            message.error("failed to update rubric")
+          })
+      }
+    }
+    this.setState({
+      matchPhasesModalVisible: false,
+      phaseSections: newPhaseSections,
+    }, () => {
+      const patchTemplate = this.getSubmissionTemplatePatch()
+      const params = {template: patchTemplate, matched: true}
+      console.log(params)
+      updateSubmission(this.state.submissionID, params)
+        .then((response) => {
+          message.success("Updated template")
+        })
+        .catch((error) => {
+          message.error("Failed to update template")
+          console.log(error)
+        })
+    })
+  }
+
   render() {
     const menu = (
       <Menu>
@@ -930,14 +982,12 @@ class Tool extends React.Component {
           }}
         >
           <div>
-            <Dropdown overlay={menu} style={{display:"inline-block"}}>
-              <a style={{color:"black"}}>
-                Go directly to submission site <DownOutlined />
-              </a>
-            </Dropdown>
             <div style={{display:"inline-block", float:"right"}}>
+              <Dropdown overlay={menu} placement="bottomRight" style={{display:"inline-block"}}>
+                <Button icon={<GlobalOutlined />} style={{marginRight:"5px"}}></Button>
+              </Dropdown>
               <Button style={{display:"inline-block", marginRight:"5px"}} icon={<ReloadOutlined />}></Button>
-              <Button style={{display:"inline-block"}} onClick={this.saveComments}>Save</Button>
+              <Button style={{display:"inline-block"}} icon={<SaveOutlined />} onClick={this.saveComments}></Button>
             </div>
           </div>
         </Header>
@@ -1074,11 +1124,52 @@ class Tool extends React.Component {
               paddingLeft: "23%"//"240px"
             }}
           >
-            <Modal visible={this.state.matchPhasesModalVisible}>
-              <Title level={5}>There are more sections in this submission than are required by the rubric. They may need to be matched to the rubric. If not, mark the section as 'extra'</Title>
-              <Select>
-                <Option>A Choice</Option>
-              </Select>
+            <Modal 
+              visible={this.state.matchPhasesModalVisible}
+              onCancel={this.cancelMatching}
+              footer={[
+                <div>
+                  <Button danger onClick={this.cancelMatching}>
+                    Cancel
+                  </Button>
+                  <Button type="primary" form="matchingForm" htmlType="submit">
+                    Finish
+                  </Button>
+                </div>,
+              ]}
+            >
+              <Title level={5}>There are more sections in this submission than are required by the rubric. They may need to be matched to the rubric. If not, mark the section as 'Extra'</Title>
+              <Form
+                layout="vertical"
+                name="Match Sections"
+                id="matchingForm"
+                onFinish={this.finishMatching}
+              >
+                {this.state.extras?.map((ex) => {
+                  if(ex.name !== "Landing Page") {
+                    return (
+                      <Form.Item
+                        name={ex.name}
+                        label={ex.name}
+                        rules={[
+                          {
+                            required: true,
+                          },
+                        ]}
+                      >
+                        <Select>
+                          {this.state.rubric?.template.map((sec) => {
+                            return (
+                              <Option value={sec.name}>{sec.name}</Option>
+                            )
+                          })}
+                          <Option value="extra_section">Extra</Option>
+                        </Select>
+                      </Form.Item>
+                    )
+                  }
+                })}
+              </Form>
             </Modal>
             <Row
               style={{position:"relative"}}

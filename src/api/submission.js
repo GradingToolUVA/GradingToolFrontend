@@ -28,6 +28,10 @@ export const getSubmissionPages = (submissionID) => {
   return axiosConfig.get("submission/get_pages?id=" + submissionID)
 }
 
+export const updatePage = (id, params) => {
+  return axiosConfig.patch("submission/page?id=" + id, params)
+}
+
 export const postComment = (pageId, params) => {
   return axiosConfig.post("submission/comment?id=" + pageId, params);
 }
