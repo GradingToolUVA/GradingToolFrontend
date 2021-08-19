@@ -24,7 +24,8 @@ import {
   ReloadOutlined,
   ExportOutlined,
   GlobalOutlined,
-  SaveOutlined
+  SaveOutlined,
+  CopyTwoTone
 } from "@ant-design/icons";
 
 import CSRFToken from "../component/CSRFToken";
@@ -66,8 +67,9 @@ class Tool extends React.Component {
       yOffset: 0,
       xHighlight: 0,
       yHighlight: 0,
-      highlight_textString: "",
       ellipsisExpanded: false,
+      systemText: "",
+      highlight_textString: "",
       highlight_text: [],//"",
       n: 0, //highlighted text is the nth occurance of that text in the submission
       submissionNodes: [], //the nodes of the html of the submission
@@ -214,8 +216,9 @@ class Tool extends React.Component {
                   submissionID: submissionID,
                   exportID: exportID,
                   rubric: rubricObj,
-                  matchPhasesModalVisible: (submissionObj.matched && extras.length > 1) ? false : true
+                  matchPhasesModalVisible: (submissionObj.matched) ? false : (extras.length > 1 ? true : false)
                 })
+                //maybe set matched as true if extras length is <= 1, because that means only the Landing Page is an extra so no matching needed
                 //LOAD THE ACTUAL HTML
                 const landingPg = pages.filter(p => p.name === "Landing Page")[0]
                 const __html = landingPg.html
@@ -248,7 +251,8 @@ class Tool extends React.Component {
                 group_name: team,
                 assignment_id: rubric_id,
                 semester: sem,
-                export_id: export_id
+                export_id: export_id,
+                matched: false,
               }
               postSubmission(params)
                 .then((response) => {
@@ -309,17 +313,20 @@ class Tool extends React.Component {
   loadHandler = () => { //on iFrame load
     //set the height to fit content
     var submission = document.getElementById("submission");
+    submission.style.height = '0px'
+    console.log(submission.contentWindow.document.body.scrollHeight)
     submission.style.height = submission.contentWindow.document.body.scrollHeight + 'px'
       //populate submissionNodes
     var iframeHTML = submission.contentDocument || submission.contentWindow.document;
     console.log("*******")
-    console.log(iframeHTML.childNodes)
-    const nodes = iframeHTML.childNodes[0]?.childNodes //gets to the [head, body] level
-    const bodyNodes = nodes[1]?.childNodes[0]?.childNodes //body->div->sections
-    console.log(typeof bodyNodes)
+    console.log(iframeHTML.childNodes) // --> [html] single element array
+    const nodes = iframeHTML.childNodes[0]?.childNodes[1]?.childNodes 
+      //[html]-->childNodes = [head, body]-->gets to the children of the body = array of nodes: [text, text, p, meta, DIV, etc.]
+        //should meta, scripts be excluded?
+    console.log(nodes)
     const submissionNodes = []
-    if(bodyNodes?.length > 0) {
-      for(const node of bodyNodes) {
+    if(nodes?.length > 0) {
+      for(const node of nodes) {
         submissionNodes.push(node)
       }
     } 
@@ -344,6 +351,7 @@ class Tool extends React.Component {
     iframe.document.close();
     iframe.addEventListener("pointerdown", this.handleMouseDown);  
     iframe.addEventListener("pointerup", this.getText);
+    // console.log("HTML LOADED")
     const p = this.state.pages.filter(p => p.name === section.name)
     if(p.length > 0) {
       const id = p[0].id
@@ -362,6 +370,11 @@ class Tool extends React.Component {
     } else {
       console.log("Page for this section is not found.")
     }
+  }
+
+  navigatePhaseSection = (value) => {
+    const p = this.state.pages.find(pg => pg.name === value)
+    this.loadPhaseSection(p)
   }
   
   handleMouseDown = (e) => {
@@ -459,7 +472,7 @@ class Tool extends React.Component {
   }
 
   addComment = (sectionName, critName, comment, y) => {
-    for(const section of this.state.phaseSections) {
+    for(const section of this.state.phaseSections) { //update the template
       if(section.name === sectionName) {
         for(const criteria of section.criteria) {
           if(criteria.name === critName) {
@@ -485,16 +498,11 @@ class Tool extends React.Component {
         }
       }
     }
-    if(y === -1) {
+    if(y === -1) { //make the comment
       const c = {
         x: this.state.xHighlight,
-        y: this.state.yHighlight - 10,
+        y: this.state.highlight_textString !== "" ? this.state.yHighlight - 10 : 0,
         text: this.state.highlight_text,
-        //n: this.state.n, //nth occurance of the text
-        /*text: {
-          text: this.state.highlight_text,
-          n: this.state.n
-        },*/
         sectionName: sectionName,
         points: comment.value,
         commentArray: [{
@@ -505,9 +513,12 @@ class Tool extends React.Component {
         }],
       }
         //MAKE THE COMMENT POST REQUEST
-      const p = this.state.pages.filter(p => p.name === sectionName)
-      if(p.length > 0) {
-        const pageid = p[0].id
+      let p = this.state.pages.find(p => p.name === sectionName) //this line assumes that there is a Page for every section in the rubric
+      if(p === undefined) {
+        p = this.state.pages.find(p => p.name === "Landing Page") //default to the landing page? should check extras first, any extra get the page by current section
+      }
+      if(p !== undefined) {
+        const pageid = p.id
         postComment(pageid, c)
           .then((response) => {
             console.log(response)
@@ -530,7 +541,7 @@ class Tool extends React.Component {
       } else {
         console.log("Page for this section is not found.")
       }
-    } else {
+    } else { //comment already exists
       for(const c of this.state.comments) {
         if(c.y === y) {
           const toAdd = {
@@ -616,14 +627,15 @@ class Tool extends React.Component {
   highlightComment = (comment) => { //go through the innerHTML of the div inside the body
     var submission = document.getElementById("submission");
     var iframeHTML = submission.contentDocument || submission.contentWindow.document;
-    const nodes = iframeHTML.childNodes[0].childNodes[1].childNodes[0] //gets to the html->body->div
-    let innerHTML = nodes.innerHTML //innerHTML of div wrapper
+    const body = iframeHTML.childNodes[0].childNodes[1]
+    let innerHTML = body.innerHTML //innerHTML of body
     for(var i = 0; i < comment.text.length; i++) {
       const text = comment.text[i].text //HERE
-      var index = this.nthIndexOf(innerHTML, text, comment.text[i].n);
+      let index = this.nthIndexOf(innerHTML, text, comment.text[i].n);
+      console.log(index)
       if (index >= 0) { 
         innerHTML = innerHTML.substring(0,index) + '<span style="background-color: #BDB76B">' + innerHTML.substring(index,index+text.length) + '</span>' + innerHTML.substring(index + text.length);
-        nodes.innerHTML = innerHTML;
+        body.innerHTML = innerHTML;
         //update the state too because the html nodes have changed
       }
     }
@@ -936,6 +948,7 @@ class Tool extends React.Component {
       updateSubmission(this.state.submissionID, params)
         .then((response) => {
           message.success("Updated template")
+          window.location.reload();
         })
         .catch((error) => {
           message.error("Failed to update template")
@@ -944,8 +957,12 @@ class Tool extends React.Component {
     })
   }
 
+  copySystemText = () => {
+    this.setState({systemText: this.state.highlight_textString})
+  }
+
   render() {
-    const menu = (
+    const globalMenu = (
       <Menu>
         {this.state.pages.map((p) => {
           if(p.name !== "Landing Page") {
@@ -982,8 +999,19 @@ class Tool extends React.Component {
           }}
         >
           <div>
+            <Select 
+              value={this.state.currentSection}
+              onChange={this.navigatePhaseSection}
+              style={{width:"175px", display:"inline-block"}}
+            >
+              {this.state.pages.map((p) => {
+                return(
+                  <Option value={p.name}>{p.name}</Option>
+                )
+              })}
+            </Select>
             <div style={{display:"inline-block", float:"right"}}>
-              <Dropdown overlay={menu} placement="bottomRight" style={{display:"inline-block"}}>
+              <Dropdown overlay={globalMenu} placement="bottomRight" style={{display:"inline-block"}}>
                 <Button icon={<GlobalOutlined />} style={{marginRight:"5px"}}></Button>
               </Dropdown>
               <Button style={{display:"inline-block", marginRight:"5px"}} icon={<ReloadOutlined />}></Button>
@@ -1052,12 +1080,13 @@ class Tool extends React.Component {
             </div>
             <p/>
             <div className="siderElementContainer">
-              <p>System:</p>
+              <p style={{display:"inline-block"}}>System:</p>
+              <Button size="small" icon={<CopyTwoTone />} onClick={this.copySystemText} style={{float:"right", display:"inline-block", backgroundColor:"transparent", border:"none"}}></Button>
               <div style={{border:"1px solid white", maxWidth:"100%", wordWrap: "break-word"}}>
                 <Paragraph ellipsis={this.state.ellipsisExpanded === false ? true : false} 
                   style={{color:"white"}}
                 >
-                  {this.state.highlight_textString}
+                  {this.state.systemText}
                 </Paragraph>
               </div>
               <Button size="small" type="link" style={{float:"right"}} onClick={this.toggleEllipsis}>{this.state.ellipsisExpanded ? "less" : "more"}</Button>
@@ -1174,19 +1203,21 @@ class Tool extends React.Component {
             <Row
               style={{position:"relative"}}
             >
-              <Col span={17}>
+              <Col span={16}>
                 <iframe
                   id='submission'
-                  width="100%"
+                  width="550px"
+                  //style={{maxWidth:"550px"}}
                   height="100%"
                   src='../submissions/dummy.html'
                   //scrolling="no"
                   onLoad={this.loadHandler}
                   onMouseDown={this.handleMouseDown}
                   onMouseUp={this.getText}
+                  style={{float:"right", maxWidth:"100%"}}
                 />
               </Col>
-              <Col id="one" span={7}>
+              <Col id="one" span={8}>
                 {/*<div className="commentDiv">One</div>
                 <Button size="small" style={{borderColor:"#90ee90", color:"#90ee90"}}>+1</Button><br></br>*/}
                 {this.state.comments.map((comment) => {
