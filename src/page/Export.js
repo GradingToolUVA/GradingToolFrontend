@@ -12,7 +12,8 @@ import {
   Select,
   message,
   Dropdown,
-  Divider
+  Divider,
+  Typography
 } from "antd";
 
 import { 
@@ -22,6 +23,7 @@ import {
 } from '../api/submission'
 
 const { Header, Sider, Content } = Layout;
+const { Title } = Typography;
 
 export default class Export extends React.Component {
   constructor(props) {
@@ -29,7 +31,8 @@ export default class Export extends React.Component {
     this.state = {
       submission: {},
       commentedPages: [],
-      commentsToDisplay: 0 //index in commentedPages to display correct set of comments
+      commentsToDisplay: 0, //index in commentedPages to display correct set of comments
+      overallGrade: {}, //ptsEarned, ptsPossible
     }
   }
 
@@ -40,6 +43,7 @@ export default class Export extends React.Component {
         const submissionObj = JSON.parse(submissionResponse.data.content[0])
         console.log(submissionObj)
         const submissionID = submissionObj.id
+        this.computeGrade(submissionObj)
         getSubmissionPages(submissionID)
           .then((pagesResponse) => {
             const pages = pagesResponse.data.content
@@ -130,6 +134,17 @@ export default class Export extends React.Component {
     return i;
   }
 
+  computeGrade = (submission) => {
+    let earned = 0;
+    let possible = 0;
+    for (const s of submission.template) {
+      earned += s.ptsEarned
+      possible += s.ptsPossible
+    }
+    const grade = {ptsEarned: earned, ptsPossible: possible}
+    this.setState({overallGrade: grade})
+  }
+
   render() {
     return (
       <Layout>
@@ -160,14 +175,25 @@ export default class Export extends React.Component {
               onClick={this.loadPage}
             >
               {this.state.commentedPages.map((cp, index) => {
+                const submissionSection = this.state.submission.template.find(sec => sec.name === cp.page.name)
                 return (
                   <Menu.Item key={index}>
-                    {cp.page.name}
+                    {cp.page.name} {submissionSection !== undefined && <b>({submissionSection.ptsEarned}/{submissionSection.ptsPossible})</b>}
                   </Menu.Item>
                 )
               })}
             </Menu>
-          </Sider>
+            <hr/>
+            <Title 
+              style={{
+                color: (this.state.overallGrade.ptsEarned === this.state.overallGrade.ptsPossible) ? "#90EE90" : "white", 
+                float:"right", 
+                marginRight:"10px"}} 
+              level={4}
+            >
+              Grade: {this.state.overallGrade.ptsEarned}/{this.state.overallGrade.ptsPossible}
+            </Title>
+          </Sider> 
           <Content
             id="content"
             style={{
@@ -221,7 +247,7 @@ class ExportComment extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      visible: false,
+      visible: true,
     }
   }
 
@@ -231,9 +257,9 @@ class ExportComment extends React.Component {
         {this.props.comment.commentArray?.map((c, index) => {
           return (
             <div className="commentContent">
+              {index !== 0 && <hr/>}
               <b>{c.comment} ({c.commentPoints})</b>
               <p>{c.additionalComment}</p>
-              <hr/>
             </div>
           )
         })}

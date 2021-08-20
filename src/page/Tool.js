@@ -25,7 +25,8 @@ import {
   ExportOutlined,
   GlobalOutlined,
   SaveOutlined,
-  CopyTwoTone
+  CopyTwoTone,
+  MessageTwoTone,
 } from "@ant-design/icons";
 
 import CSRFToken from "../component/CSRFToken";
@@ -131,6 +132,18 @@ class Tool extends React.Component {
   }
 
   componentDidMount() {
+    window.addEventListener('resize', (event) => {
+      console.log(event)
+      var submission = document.getElementById("submission");
+      const body = submission.contentWindow.document.body
+      if(body.scrollWidth > body.clientWidth) {
+        console.log(body.getAttribute('width'))
+        console.log(body.scrollWidth)
+        console.log(body.clientWidth)
+        console.log(Math.round((body.scrollWidth - body.clientWidth) / 2))
+        submission.scrollLeft = Math.round((body.scrollWidth - body.clientWidth) / 2) 
+      }
+    });
     var content = document.getElementById("content")
     const yOffset = content.getBoundingClientRect().top; //left to get x-offset
     //console.log("Y-offset:" + yOffset)
@@ -188,6 +201,7 @@ class Tool extends React.Component {
                     phaseSections.push(toAdd)
                   } else { //is an extra section
                     //extras.push(section) probably dont need this
+                    phaseSections.push(toAdd)
                   }
                 }
                 for(const p of pages) { //either this or the above will populate the extras
@@ -474,28 +488,33 @@ class Tool extends React.Component {
   addComment = (sectionName, critName, comment, y) => {
     for(const section of this.state.phaseSections) { //update the template
       if(section.name === sectionName) {
+        section.ptsEarned += comment.value;
+        section.currComments.push(comment)
         for(const criteria of section.criteria) {
           if(criteria.name === critName) {
-            section.ptsEarned += comment.value;
-            section.currComments.push(comment)
+            // section.ptsEarned += comment.value;
+            // section.currComments.push(comment)
             criteria.ptsEarned += comment.value;
             this.setState({
               phaseSections: this.state.phaseSections
-            }, () => {
-              const patchTemplate = this.getSubmissionTemplatePatch()
-              const params = {template: patchTemplate}
-              console.log(params)
-              updateSubmission(this.state.submissionID, params)
-                .then((response) => {
-                  message.success("Updated template")
-                })
-                .catch((error) => {
-                  message.error("Failed to update template")
-                  console.log(error)
-                })
             })
           }
         }
+        this.setState({
+          phaseSections: this.state.phaseSections
+        }, () => {
+          const patchTemplate = this.getSubmissionTemplatePatch()
+          const params = {template: patchTemplate}
+          console.log(params)
+          updateSubmission(this.state.submissionID, params)
+            .then((response) => {
+              message.success("Updated template")
+            })
+            .catch((error) => {
+              message.error("Failed to update template")
+              console.log(error)
+            })
+        })
       }
     }
     if(y === -1) { //make the comment
@@ -995,7 +1014,7 @@ class Tool extends React.Component {
             width: "100%",
             backgroundColor: "#1890FF",
             position: "fixed",
-            zIndex: 1
+            zIndex: 1031 //Popover zIndex = 1030
           }}
         >
           <div>
@@ -1093,41 +1112,54 @@ class Tool extends React.Component {
               <p/>
             </div>
             <div className="siderElementContainer">
-              <p>Comment:</p>
+              <p style={{display:"inline-block"}}>Comment:</p>
+              <Button 
+                size="small" 
+                icon={<MessageTwoTone />} 
+                onClick={() => {
+                  this.addComment(this.state.currentSection, "", {
+                    text: {shortenedText:"[Write]", fullText:"[Write]"},
+                    value: 0
+                  }, -1) //-1 indicates a new comment is to be added
+                }} 
+                style={{display:"inline-block", backgroundColor:"transparent", border:"none"}}>
+              </Button>
               {this.state.phaseSections.map((section) => {
-                return (
-                  <Collapse key={section.name}className="collapse">
-                    <Panel
-                      header={section.name}
-                      extra={                    
-                        <Popover 
-                          className="mainPopover" 
-                          placement="right" 
-                          title="Current Comments" 
-                          content={this.getCurrComments(section.currComments)} 
-                          trigger="hover"
-                        >
-                          <Button className="mainGrade" size="small" onClick={() => {this.loadPhaseSection(section)}}>
-                            <sup>{section.ptsEarned}</sup>&frasl;<sub>{section.ptsPossible}</sub>
-                          </Button>
-                        </Popover>  
-                      }  
-                    >
-                      {section.criteria.map((crit) => {
-                        return (
-                          <div key={crit.name}>
-                            <Button className="subCategory" size="small">{crit.name}</Button>
-                            <Popover className="subGrade" placement="rightBottom" content={this.getComments(section.name, crit.name)}>
-                              <Button className="commentButton" size="small">
-                                <sup>{crit.ptsEarned}</sup>&frasl;<sub>{crit.ptsPossible}</sub>
-                              </Button>
-                            </Popover>
-                          </div>
-                        )
-                      })}
-                    </Panel>
-                  </Collapse>
-                )
+                if(this.state.rubric.template.find(sec => sec.name === section.name) !== undefined) {
+                  return (
+                    <Collapse key={section.name}className="collapse">
+                      <Panel
+                        header={section.name}
+                        extra={                    
+                          <Popover 
+                            className="mainPopover" 
+                            placement="right" 
+                            title="Current Comments" 
+                            content={this.getCurrComments(section.currComments)} 
+                            trigger="hover"
+                          >
+                            <Button className="mainGrade" size="small" onClick={() => {this.loadPhaseSection(section)}}>
+                              <sup>{section.ptsEarned}</sup>&frasl;<sub>{section.ptsPossible}</sub>
+                            </Button>
+                          </Popover>  
+                        }  
+                      >
+                        {section.criteria.map((crit) => {
+                          return (
+                            <div key={crit.name}>
+                              <Button className="subCategory" size="small">{crit.name}</Button>
+                              <Popover className="subGrade" placement="rightBottom" content={this.getComments(section.name, crit.name)}>
+                                <Button className="commentButton" size="small">
+                                  <sup>{crit.ptsEarned}</sup>&frasl;<sub>{crit.ptsPossible}</sub>
+                                </Button>
+                              </Popover>
+                            </div>
+                          )
+                        })}
+                      </Panel>
+                    </Collapse>
+                  )
+                }
               })}
             </div>
             <p></p>
@@ -1203,10 +1235,10 @@ class Tool extends React.Component {
             <Row
               style={{position:"relative"}}
             >
-              <Col span={16}>
+              <Col span={17}>
                 <iframe
                   id='submission'
-                  width="550px"
+                  width="100%"
                   //style={{maxWidth:"550px"}}
                   height="100%"
                   src='../submissions/dummy.html'
@@ -1217,7 +1249,7 @@ class Tool extends React.Component {
                   style={{float:"right", maxWidth:"100%"}}
                 />
               </Col>
-              <Col id="one" span={8}>
+              <Col id="one" span={7}>
                 {/*<div className="commentDiv">One</div>
                 <Button size="small" style={{borderColor:"#90ee90", color:"#90ee90"}}>+1</Button><br></br>*/}
                 {this.state.comments.map((comment) => {

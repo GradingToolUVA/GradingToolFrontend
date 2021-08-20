@@ -68,6 +68,7 @@
             console.log(c.additionalComment)
             return (
               <div className="commentContent">
+                {index !== 0 && <hr/>}
                 <InputNumber
                   size="small"
                   value={c.commentPoints} 
@@ -128,7 +129,6 @@
                       )
                     ]
                 }
-                <hr/>
               </div>
             )
           })}
