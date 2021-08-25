@@ -35,6 +35,13 @@ class Submission extends React.Component {
                   }, 
                   value: -10
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             }
           ],
@@ -71,6 +78,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             }
           ],
@@ -99,6 +113,13 @@ class Submission extends React.Component {
                     fullText:"Provided contact info"
                   }, 
                   value: 1
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             }
@@ -136,6 +157,13 @@ class Submission extends React.Component {
                   }, 
                   value: -1
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -164,6 +192,13 @@ class Submission extends React.Component {
                   }, 
                   value: -3
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -177,6 +212,13 @@ class Submission extends React.Component {
                     fullText:"Vague statements, lack of precision"
                   }, 
                   value: -2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             }
@@ -200,6 +242,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -213,6 +262,13 @@ class Submission extends React.Component {
                     fullText:"Diagram didn't explain the 'how'"
                   }, 
                   value: -5
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -236,6 +292,13 @@ class Submission extends React.Component {
                   }, 
                   value: -2
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -249,6 +312,13 @@ class Submission extends React.Component {
                     fullText:"Didn't fully explain what was learned from research"
                   }, 
                   value: -2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -272,6 +342,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -285,6 +362,13 @@ class Submission extends React.Component {
                     fullText:"Process description is missing details"
                   }, 
                   value: -2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -308,6 +392,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -321,6 +412,13 @@ class Submission extends React.Component {
                     fullText:"Process description is missing details"
                   }, 
                   value: -2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -344,6 +442,13 @@ class Submission extends React.Component {
                   }, 
                   value: -3
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -357,6 +462,13 @@ class Submission extends React.Component {
                     fullText:"Doesn't fully explain what you learned about your design"
                   }, 
                   value: -3
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -380,6 +492,13 @@ class Submission extends React.Component {
                   }, 
                   value: 5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -393,6 +512,13 @@ class Submission extends React.Component {
                     fullText:"Could tell a lot of effort was spent on presenting the work"
                   }, 
                   value: 5
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -428,6 +554,13 @@ class Submission extends React.Component {
                   }, 
                   value: -3
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -441,6 +574,13 @@ class Submission extends React.Component {
                     fullText:"Rationale is not clear."
                   }, 
                   value: -2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -456,6 +596,13 @@ class Submission extends React.Component {
                   }, 
                   value: -2
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -469,6 +616,13 @@ class Submission extends React.Component {
                     fullText:"Technical summary is provided"
                   }, 
                   value: 2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             }
@@ -499,6 +653,13 @@ class Submission extends React.Component {
                   }, 
                   value: -3
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -512,6 +673,13 @@ class Submission extends React.Component {
                     fullText:"Missing parts about accessing, recruiting, and observing users of the current system."
                   }, 
                   value: -3
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -534,6 +702,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -548,6 +723,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -561,6 +743,13 @@ class Submission extends React.Component {
                     fullText:"Bonus for CI"
                   }, 
                   value: 2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             }
@@ -598,6 +787,13 @@ class Submission extends React.Component {
                   }, 
                   value: -2
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -612,6 +808,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -625,6 +828,13 @@ class Submission extends React.Component {
                     fullText:"The creation process is missing parts."
                   }, 
                   value: -5
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -653,6 +863,13 @@ class Submission extends React.Component {
                     fullText:"Lost points for readability"
                   }, 
                   value: -2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             }
@@ -690,6 +907,13 @@ class Submission extends React.Component {
                   }, 
                   value: -2
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -711,6 +935,13 @@ class Submission extends React.Component {
                   }, 
                   value: -1
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -724,6 +955,13 @@ class Submission extends React.Component {
                     fullText:"Prioritized the requirements."
                   }, 
                   value: 1
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             }
@@ -782,6 +1020,13 @@ class Submission extends React.Component {
                   }, 
                   value: -1
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -803,6 +1048,13 @@ class Submission extends React.Component {
                   }, 
                   value: -3
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -817,6 +1069,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -830,6 +1089,13 @@ class Submission extends React.Component {
                     fullText:"Provided extra models"
                   }, 
                   value: 5
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -872,6 +1138,13 @@ class Submission extends React.Component {
                   }, 
                   value: -3
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             }, 
             {
@@ -893,6 +1166,13 @@ class Submission extends React.Component {
                   }, 
                   value: -3
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -906,6 +1186,13 @@ class Submission extends React.Component {
                     fullText:"Candidate personas are fully fleshed out"
                   }, 
                   value: 2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             }
@@ -928,6 +1215,13 @@ class Submission extends React.Component {
                     fullText:"Does not fully explain how the analysis helped you"
                   }, 
                   value: -2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -956,6 +1250,13 @@ class Submission extends React.Component {
                     fullText:"Missing key tasks"
                   }, 
                   value: -1
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -992,6 +1293,13 @@ class Submission extends React.Component {
                   }, 
                   value: -1
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1013,6 +1321,13 @@ class Submission extends React.Component {
                   }, 
                   value: -2
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1033,6 +1348,13 @@ class Submission extends React.Component {
                     fullText:"Thorough explanation of alternatives"
                   }, 
                   value: 2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             }
@@ -1056,6 +1378,13 @@ class Submission extends React.Component {
                   }, 
                   value: -4
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1070,6 +1399,13 @@ class Submission extends React.Component {
                   }, 
                   value: -3
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1083,6 +1419,13 @@ class Submission extends React.Component {
                     fullText:"Included mental model from multiple perspectives"
                   }, 
                   value: 1
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             }
@@ -1113,6 +1456,13 @@ class Submission extends React.Component {
                   }, 
                   value: -1
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1126,6 +1476,13 @@ class Submission extends React.Component {
                     fullText:"Missing screens of most important functions"
                   }, 
                   value: -5
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -1141,6 +1498,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1154,6 +1518,13 @@ class Submission extends React.Component {
                     fullText:"Didn;t show system's fit in user's life and other system"
                   }, 
                   value: -5
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -1175,6 +1546,13 @@ class Submission extends React.Component {
                     fullText:"Correct affordances/metaphor use"
                   }, 
                   value: 2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             }
@@ -1198,6 +1576,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1219,6 +1604,13 @@ class Submission extends React.Component {
                   }, 
                   value: -4
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1233,6 +1625,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1246,6 +1645,13 @@ class Submission extends React.Component {
                     fullText:"Extra/detailed/well-documented storyboards"
                   }, 
                   value: 5
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -1269,6 +1675,13 @@ class Submission extends React.Component {
                   }, 
                   value: -2
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1282,6 +1695,13 @@ class Submission extends React.Component {
                     fullText:"Wireframes don't address the scenario"
                   }, 
                   value: -2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -1297,6 +1717,13 @@ class Submission extends React.Component {
                   }, 
                   value: -2
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1310,6 +1737,13 @@ class Submission extends React.Component {
                     fullText:"Unclear navigation flow, missing arrows/captions"
                   }, 
                   value: -3
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -1331,6 +1765,13 @@ class Submission extends React.Component {
                     fullText:"Excellent scenario"
                   }, 
                   value: 2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -1354,6 +1795,13 @@ class Submission extends React.Component {
                   }, 
                   value: -3
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1374,6 +1822,13 @@ class Submission extends React.Component {
                     fullText:"Missing documentation on collaboration"
                   }, 
                   value: -2
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -1396,6 +1851,13 @@ class Submission extends React.Component {
                     fullText:"Included design Studio feedback, UX targets, constant checking with client, excellent discussion on learning, and physical mockup"
                   }, 
                   value: 5
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -1438,6 +1900,13 @@ class Submission extends React.Component {
                   }, 
                   value: -3
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1452,6 +1921,13 @@ class Submission extends React.Component {
                   }, 
                   value: -10
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1465,6 +1941,13 @@ class Submission extends React.Component {
                     fullText:"Inadequate justification of choices"
                   }, 
                   value: -4
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -1495,6 +1978,13 @@ class Submission extends React.Component {
                   }, 
                   value: -3
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1508,6 +1998,13 @@ class Submission extends React.Component {
                     fullText:"Did not take into account the instructor/TA comments"
                   }, 
                   value: -5
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -1531,6 +2028,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1545,6 +2049,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1558,6 +2069,13 @@ class Submission extends React.Component {
                     fullText:"The prototype is not effective in facilitating evaluation"
                   }, 
                   value: -5
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -1588,6 +2106,13 @@ class Submission extends React.Component {
                   }, 
                   value: -3
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1608,6 +2133,13 @@ class Submission extends React.Component {
                     fullText:"The participant demographics should reflect the user classes"
                   }, 
                   value: -3
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -1637,6 +2169,13 @@ class Submission extends React.Component {
                   }, 
                   value: -2
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1665,6 +2204,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             }
           ],
@@ -1687,6 +2233,13 @@ class Submission extends React.Component {
                   }, 
                   value: -5
                 },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
+                },
               ]
             },
             {
@@ -1700,6 +2253,13 @@ class Submission extends React.Component {
                     fullText:"Missing recommendations that would be made to the prototype to meet target levels"
                   }, 
                   value: -5
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },
@@ -1722,6 +2282,13 @@ class Submission extends React.Component {
                     fullText:"Includes limitations, +users, +analysis, +BTs, +eval, +prototypes"
                   }, 
                   value: 5
+                },
+                {
+                  text: {
+                    shortenedText:"Custom", 
+                    fullText:"Custom"
+                  }, 
+                  value: 0
                 },
               ]
             },

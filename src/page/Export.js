@@ -13,7 +13,9 @@ import {
   message,
   Dropdown,
   Divider,
-  Typography
+  Typography,
+  Modal,
+  List
 } from "antd";
 
 import { 
@@ -33,6 +35,7 @@ export default class Export extends React.Component {
       commentedPages: [],
       commentsToDisplay: 0, //index in commentedPages to display correct set of comments
       overallGrade: {}, //ptsEarned, ptsPossible
+      genFBModalVisible: false
     }
   }
 
@@ -145,6 +148,10 @@ export default class Export extends React.Component {
     this.setState({overallGrade: grade})
   }
 
+  openGeneralFeedback = () => {
+    this.setState({genFBModalVisible: true})
+  }
+
   render() {
     return (
       <Layout>
@@ -154,7 +161,7 @@ export default class Export extends React.Component {
             width: "100%",
             backgroundColor: "#1890FF",
             position: "fixed",
-            zIndex: 1
+            zIndex: 1031
           }}
         >
 
@@ -193,6 +200,44 @@ export default class Export extends React.Component {
             >
               Grade: {this.state.overallGrade.ptsEarned}/{this.state.overallGrade.ptsPossible}
             </Title>
+            <Modal
+              title="General Feedback"
+              visible={this.state.genFBModalVisible}
+              footer={null}
+              onCancel={() => {this.setState({genFBModalVisible: false})}}
+            >
+              <List size="small">
+                {this.state.submission.general_feedback?.map((gf) => {
+                  const fb = gf.split(/\r|\n/);
+                  console.log(fb)
+                  return (
+                    <List.Item>
+                      <div>
+                        {fb.map((t) => {
+                          return (
+                            <div style={{color:"black"}}>
+                              <p style={{margin:"0"}}>{t}hohohohohohefwefwefewfwefewf</p>
+                              <br/>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </List.Item>
+                  );
+                })}
+              </List>
+            </Modal>
+            <Button 
+              style={{
+                float:"right"
+              }} 
+              type="link"
+              size="small"
+              onClick={this.openGeneralFeedback}
+            >
+              General feedback
+            </Button>
+            <p/>
           </Sider> 
           <Content
             id="content"

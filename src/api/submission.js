@@ -40,8 +40,8 @@ export const patchComment = (id, params) => {
   return axiosConfig.patch("submission/comment?id=" + id, params);
 }
 
-export const deleteComment = (id, params) => {
-  return axiosConfig.delete("submission/comment?id=" + id, params);
+export const deleteComment = (id) => {
+  return axiosConfig.delete("submission/comment?id=" + id);
 }
 
 export const getComments = (pageId) => {

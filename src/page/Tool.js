@@ -15,7 +15,8 @@ import {
   Divider,
   Typography,
   Modal,
-  Form
+  Form,
+  List
 } from "antd";
 import {
   CaretLeftOutlined,
@@ -27,9 +28,10 @@ import {
   SaveOutlined,
   CopyTwoTone,
   MessageTwoTone,
+  DeleteOutlined
 } from "@ant-design/icons";
 
-import CSRFToken from "../component/CSRFToken";
+import EditableText from "../component/EditableText";
 import Comment from '../component/Comment'
 import '../asset/css/ToolContent.css'
 import '../asset/css/ToolSider.css'
@@ -127,7 +129,10 @@ class Tool extends React.Component {
       currentSection: "Landing Page",
       exportID: "",
       matchPhasesModalVisible: false,
-      rubric: {}
+      rubric: {},
+      submission: {},
+      genFBModalVisible: false,
+      currentGenFB: "",
     }
   }
 
@@ -146,6 +151,9 @@ class Tool extends React.Component {
     });
     var content = document.getElementById("content")
     const yOffset = content.getBoundingClientRect().top; //left to get x-offset
+    message.config({
+      top: 60,
+    })
     //console.log("Y-offset:" + yOffset)
     this.setState({
       yOffset: yOffset, 
@@ -230,6 +238,7 @@ class Tool extends React.Component {
                   submissionID: submissionID,
                   exportID: exportID,
                   rubric: rubricObj,
+                  submission: submissionObj,
                   matchPhasesModalVisible: (submissionObj.matched) ? false : (extras.length > 1 ? true : false)
                 })
                 //maybe set matched as true if extras length is <= 1, because that means only the Landing Page is an extra so no matching needed
@@ -486,7 +495,8 @@ class Tool extends React.Component {
   }
 
   addComment = (sectionName, critName, comment, y) => {
-    for(const section of this.state.phaseSections) { //update the template
+    const phaseSectionsCopy = [...this.state.phaseSections]
+    for(const section of phaseSectionsCopy) { //update the template
       if(section.name === sectionName) {
         section.ptsEarned += comment.value;
         section.currComments.push(comment)
@@ -495,13 +505,11 @@ class Tool extends React.Component {
             // section.ptsEarned += comment.value;
             // section.currComments.push(comment)
             criteria.ptsEarned += comment.value;
-            this.setState({
-              phaseSections: this.state.phaseSections
-            })
+            break;
           }
         }
         this.setState({
-          phaseSections: this.state.phaseSections
+          phaseSections: phaseSectionsCopy
         }, () => {
           const patchTemplate = this.getSubmissionTemplatePatch()
           const params = {template: patchTemplate}
@@ -561,7 +569,8 @@ class Tool extends React.Component {
         console.log("Page for this section is not found.")
       }
     } else { //comment already exists
-      for(const c of this.state.comments) {
+      const comments = [...this.state.comments]
+      for(const c of comments) {
         if(c.y === y) {
           const toAdd = {
             comment: comment.text.fullText,
@@ -572,7 +581,7 @@ class Tool extends React.Component {
           c.commentArray.push(toAdd)
           c.points += comment.value
           this.setState({
-            comments: this.state.comments,
+            comments: comments,
           })
           patchComment(c.id, {points: c.points, commentArray: c.commentArray})
             .then((response) => {
@@ -600,29 +609,6 @@ class Tool extends React.Component {
       toPatch.push(toAdd)
     }
     return toPatch
-  }
-
-  anotherComment = (sectionName, y) => {
-      //y is used to find the comment in state.comments
-    const section = this.state.phaseSections.filter(s => {
-      return s.name === sectionName
-    })
-    const criteria = section[0].criteria
-    return(
-      <div>
-        {criteria.map((crit) => {
-          return (
-            <div key={crit.name}>
-              <Popover placement="right" content={this.getComments(sectionName, crit.name, y)}>
-                <Button size="small" style={{width:"100%", maxWidth:"150px"}}>
-                  {crit.name}
-                </Button>
-              </Popover>
-            </div>
-          )
-        })}
-      </div>
-    )
   }
 
   adjustPositions(comments) {
@@ -663,12 +649,13 @@ class Tool extends React.Component {
   unhighlightComment = (text, n) => {
     var submission = document.getElementById("submission");
     var iframeHTML = submission.contentDocument || submission.contentWindow.document;
-    const nodes = iframeHTML.childNodes[0].childNodes[1].childNodes[0] //gets to the html->body->div
-    let innerHTML = nodes.innerHTML //innerHTML of div wrapper
-    var index = this.nthIndexOf(innerHTML, text, n);
+    const body = iframeHTML.childNodes[0].childNodes[1]
+    let innerHTML = body.innerHTML //innerHTML of body
+    const index = this.nthIndexOf(innerHTML, text, n);
     if (index >= 0) { 
       innerHTML = innerHTML.substring(0,index-40) + innerHTML.substring(index,index+text.length) + innerHTML.substring(index + text.length + 7);
-      nodes.innerHTML = innerHTML;
+        //40 and 7 account for the <span style="background-color: #BDB76B"> and </span> bookending the actual text
+      body.innerHTML = innerHTML;
       //update the state too because the html nodes have changed
     }
   }
@@ -779,20 +766,27 @@ class Tool extends React.Component {
     )
   }
 
+  /********** FOLLOWING PASSED AS PROPS TO COMMENT **********/
+
   ptValueChange = (value, comment, originalPoints, index) => { //pass to Comment
+    const comments = [...this.state.comments]
+    const phaseSections = [...this.state.phaseSections]
     if(isNaN(value) === false) {
-      console.log(value)
-      console.log(originalPoints)
+      // console.log(value)
+      // console.log(originalPoints)
+      let indexChanged = 0;
       const y = comment.y
       let ptDiff = value - originalPoints
-      for(const c of this.state.comments) {
+      for(let i = 0; i < comments; i++) {
+        const c = comments[i]
         if(c.y === y) {
           c.points += ptDiff
           c.commentArray[index].commentPoints = value
+          indexChanged = i
           break;
         }
       }
-      for(const s of this.state.phaseSections) {
+      for(const s of phaseSections) {
         if(s.name === comment.sectionName) {
           for(const c of s.criteria) {
             if(c.name === comment.commentArray[index].criteriaName) {
@@ -804,43 +798,85 @@ class Tool extends React.Component {
         }
       }
       this.setState({
-        comments: this.state.comments,
-        phaseSections: this.state.phaseSections,
-      })
+        comments: comments,
+        phaseSections: phaseSections,
+      }, () => {this.saveComment(indexChanged, true)}) //true indicated points have changed
     }
   }
 
-  editCommentText = (y, newCommentText, index) => {
+  anotherComment = (sectionName, y) => {
+    //y is used to find the comment in state.comments
+    const section = this.state.phaseSections.filter(s => {
+      return s.name === sectionName
+    })
+    const criteria = section[0].criteria
+    return(
+      <div>
+        {criteria.map((crit) => {
+          return (
+            <div key={crit.name}>
+              <Popover placement="right" content={this.getComments(sectionName, crit.name, y)}>
+                <Button size="small" style={{width:"100%", maxWidth:"150px"}}>
+                  {crit.name}
+                </Button>
+              </Popover>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  editCommentText = (y, newCommentText, index) => { //pass to Comment
     const commentsCopy = this.state.comments
-    for(const comment of commentsCopy) {
+    let indexChanged = 0;
+    for(let i = 0; i < commentsCopy.length; i++) {
+      const comment = commentsCopy[i]
       if(comment.y === y) {
         comment.commentArray[index].comment = newCommentText
+        indexChanged = i
       }
     }
-    this.setState({comments: commentsCopy})
+    this.setState({
+      comments: commentsCopy
+    }, () => {this.saveComment(indexChanged, false)})
   }
 
   deleteAdditionalComment = (y, index) => { //pass to Comment
-    for(const comment of this.state.comments) {
+    const commentsCopy = this.state.comments
+    let indexChanged = 0;
+    for(let i = 0; i < commentsCopy.length; i++) {
+      const comment = commentsCopy[i]
       if(comment.y === y) {
         comment.commentArray[index].additionalComment = ""
+        indexChanged = i
       }
     }
-    this.setState({comments: this.state.comments})
+    this.setState({
+      comments: commentsCopy
+    }, () => {this.saveComment(indexChanged, false)})
   }
 
   additionalComment = (text, y, index) => { //pass to Comment
-    for(const comment of this.state.comments) {
+    const commentsCopy = this.state.comments
+    let indexChanged = 0;
+    for(let i = 0; i < commentsCopy.length; i++) {
+      const comment = commentsCopy[i]
       if(comment.y === y) {
         comment.commentArray[index].additionalComment = text
+        indexChanged = i
       }
     }
-    this.setState({comments: this.state.comments})
+    this.setState({
+      comments: commentsCopy
+    }, () => {this.saveComment(indexChanged, false)})
   }
 
   deleteComment = (y, index) => { //pass to Comment
-    for(var i = 0; i < this.state.comments.length; i++) {
-      const comment = this.state.comments[i]
+    const comments = [...this.state.comments]
+    const phaseSections = [...this.state.phaseSections]
+    for(var i = 0; i < comments.length; i++) {
+      const comment = comments[i]
       if(comment.y === y) {
         const deleteID = comment.id
         const text = comment.text
@@ -852,20 +888,23 @@ class Tool extends React.Component {
         console.log(pts)
         comment.commentArray.splice(index, 1)
         if(comment.commentArray.length === 0) {
-          this.state.comments.splice(i, 1) //delete the comment
-          this.unhighlightComment(text, n)
+          deleteComment(deleteID)
+            .then((response) => {
+              message.success("Deleted comment")
+              comments.splice(i, 1) //delete the comment
+              this.setState({ comments: comments })
+              for(const t of text) {
+                this.unhighlightComment(t.text, t.n)
+              }
+            })
+            .catch((error) => {
+              message.error(error.message)
+            })
         } else {
           comment.points -= pts; //or adjust its points
+          this.saveComment(i, false)
         }
-        deleteComment(deleteID)
-          .then((response) => {
-            message.success("Deleted comment")
-          })
-          .catch((error) => {
-            message.error(error.message)
-          })
-        this.setState({ comments: this.state.comments })
-        for(const s of this.state.phaseSections) {
+        for(const s of phaseSections) {
           if(s.name === sectionName) {
             for(let i = 0; i < s.currComments.length; i++) {
               if(s.currComments[i].value === pts && s.currComments[i].text.fullText === commentText) {
@@ -877,7 +916,7 @@ class Tool extends React.Component {
               if(c.name === critName) {
                 s.ptsEarned -= pts;
                 c.ptsEarned -= pts;
-                this.setState({phaseSections: this.state.phaseSections}, () => {
+                this.setState({phaseSections: phaseSections}, () => {
                   const patchTemplate = this.getSubmissionTemplatePatch()
                   const params = {template: patchTemplate}
                   console.log(params)
@@ -899,12 +938,33 @@ class Tool extends React.Component {
       }
     }
   }
+  /********** **********/
+  saveComment = (index, ptsChanged) => { //save comments and maybe the points total
+    const newComment = this.state.comments[index]
+    const id = newComment.id
+    patchComment(id, newComment)
+      .then((response) => {
+        message.success("Saved all comments");
+      })
+      .catch((error) => {
+        message.error(error.message);
+      });
+    if(ptsChanged) {
+      updateSubmission(this.state.submissionID, {template: this.getSubmissionTemplatePatch()})
+        .then((response) => {
+          message.success("submission updated")
+        })
+        .catch((error) => {
+          message.error("failed to update submission")
+        })
+    }
+  }
 
   toggleEllipsis = () => {
     this.setState({ellipsisExpanded: this.state.ellipsisExpanded ? false : true})
   }
 
-  saveComments = () => { //save comments and ALSO the points total
+  /*saveComments = () => { //save comments and ALSO the points total
     let patchReqs = []
     console.log(this.state.comments)
     for(const c of this.state.comments) {
@@ -925,7 +985,7 @@ class Tool extends React.Component {
       .catch((error) => {
         message.error("failed to update submission")
       })
-  }
+  }*/
 
   exportSubmission = () => {
     const exportID = this.state.exportID
@@ -978,6 +1038,69 @@ class Tool extends React.Component {
 
   copySystemText = () => {
     this.setState({systemText: this.state.highlight_textString})
+  }
+
+  collapseChange = (key) => {
+    console.log(key)
+    const name = key[key.length - 1]
+    const section = this.state.phaseSections.find(s => s.name === name)
+    this.loadPhaseSection(section)
+  }
+
+  openGeneralFeedback = () => {
+    this.setState({genFBModalVisible: true})
+  }
+
+  changeGeneralFeedback = (e) => {
+    //console.log(e.target.value)
+    this.setState({currentGenFB: e.target.value})
+  }
+
+  editGeneralFeedback = (newFB, index) => {
+    const feedbacks = [...this.state.submission.general_feedback]
+    console.log(this.state.currentGenFB)
+    feedbacks[index] = newFB
+    const newSubmission = Object.assign({}, this.state.submission)
+    newSubmission.general_feedback = feedbacks
+    this.setState({submission: newSubmission})
+    updateSubmission(this.state.submissionID, {general_feedback: feedbacks})
+      .then((response) => {
+        message.success("uploaded")
+      })
+      .catch((error) => {
+        message.error("error")
+      })
+  }
+
+  submitGeneralFeedback = () => {
+    const feedbacks = [...this.state.submission.general_feedback]
+    console.log(this.state.currentGenFB)
+    feedbacks.push(this.state.currentGenFB)
+    const newSubmission = Object.assign({}, this.state.submission)
+    newSubmission.general_feedback = feedbacks
+    this.setState({submission: newSubmission})
+    updateSubmission(this.state.submissionID, {general_feedback: feedbacks})
+      .then((response) => {
+        message.success("uploaded")
+      })
+      .catch((error) => {
+        message.error("error")
+      })
+  }
+
+  deleteGeneralFeedback = (index) => {
+    const feedbacks = [...this.state.submission.general_feedback]
+    feedbacks.splice(index, 1)
+    const newSubmission = Object.assign({}, this.state.submission)
+    newSubmission.general_feedback = feedbacks
+    this.setState({submission: newSubmission})
+    updateSubmission(this.state.submissionID, {general_feedback: feedbacks})
+      .then((response) => {
+        message.success("deleted")
+      })
+      .catch((error) => {
+        message.error("error")
+      })
   }
 
   render() {
@@ -1034,7 +1157,7 @@ class Tool extends React.Component {
                 <Button icon={<GlobalOutlined />} style={{marginRight:"5px"}}></Button>
               </Dropdown>
               <Button style={{display:"inline-block", marginRight:"5px"}} icon={<ReloadOutlined />}></Button>
-              <Button style={{display:"inline-block"}} icon={<SaveOutlined />} onClick={this.saveComments}></Button>
+              {/*<Button style={{display:"inline-block"}} icon={<SaveOutlined />} onClick={this.saveComments}></Button>*/}
             </div>
           </div>
         </Header>
@@ -1124,10 +1247,13 @@ class Tool extends React.Component {
                 }} 
                 style={{display:"inline-block", backgroundColor:"transparent", border:"none"}}>
               </Button>
-              {this.state.phaseSections.map((section) => {
-                if(this.state.rubric.template.find(sec => sec.name === section.name) !== undefined) {
-                  return (
-                    <Collapse key={section.name}className="collapse">
+              <Collapse           
+                className="collapse"
+                //onChange={this.collapseChange}
+              >
+                {this.state.phaseSections.map((section, index) => {
+                  if(this.state.rubric.template.find(sec => sec.name === section.name) !== undefined) {
+                    return (       
                       <Panel
                         header={section.name}
                         extra={                    
@@ -1138,11 +1264,17 @@ class Tool extends React.Component {
                             content={this.getCurrComments(section.currComments)} 
                             trigger="hover"
                           >
-                            <Button className="mainGrade" size="small" onClick={() => {this.loadPhaseSection(section)}}>
+                            <Button 
+                              className="mainGrade" 
+                              size="small" 
+                              onClick={() => {this.loadPhaseSection(section)}}
+                            >
                               <sup>{section.ptsEarned}</sup>&frasl;<sub>{section.ptsPossible}</sub>
                             </Button>
                           </Popover>  
                         }  
+                        key={section.name}
+                        style={{backgroundColor: section.name === this.state.currentSection? "#C5C5C5" : "#FFFFFF"}}
                       >
                         {section.criteria.map((crit) => {
                           return (
@@ -1156,24 +1288,63 @@ class Tool extends React.Component {
                             </div>
                           )
                         })}
-                      </Panel>
-                    </Collapse>
-                  )
-                }
-              })}
+                      </Panel>      
+                    )
+                  }
+                })}
+              </Collapse>
             </div>
-            <p></p>
+            <Modal
+              title="General Feedback"
+              visible={this.state.genFBModalVisible}
+              footer={null}
+              onCancel={() => {this.setState({genFBModalVisible: false})}}
+            >
+              <List header={<Title level={5}>Current:</Title>} size="small">
+                {this.state.submission.general_feedback?.map((fb, index) => {
+                  return (
+                    <List.Item>
+                      <EditableText
+                        defaultEdit={false}
+                        text={fb}
+                        index={index}
+                        onEditFinish={this.editGeneralFeedback}
+                      />
+                      <Button
+                        size="small"
+                        danger
+                        icon={<DeleteOutlined/>}
+                        style={{marginLeft:"5px"}}
+                        onClick={this.deleteGeneralFeedback}
+                      />
+                    </List.Item>
+                  )
+                })}
+              </List>
+              <hr/>
+              <Title level={5}>Add Feedback</Title>
+              <TextArea onChange={this.changeGeneralFeedback} autoSize={{ minRows: 3, maxRows: 6 }}/>
+              <Button type="primary" onClick={this.submitGeneralFeedback} style={{display:"block",float:"right", marginTop:"5px"}}>Submit</Button>
+              <p style={{clear:"right"}}/>
+            </Modal>
+            <Button
+              type="link"
+              size="small"
+              onClick={this.openGeneralFeedback}
+              style={{display:"block", float:"right", marginTop:"5px", marginBottom:"5px"}}
+            >
+              General Feedback   
+            </Button>
             <Button
               type="primary"
               icon={<ExportOutlined />}
               shape="round"
               onClick={this.exportSubmission}
-              style={{float:"right", marginRight:"5px"}}
+              style={{marginRight:"5px", display:"block", clear:"right", float:"right"}}
             >
               Export
             </Button>
-            <Divider/>
-            <div style={{color:"black"}}>***Grading Tool 2021***</div>
+            <div style={{color:"black", clear:"right"}}>***Grading Tool 2021***</div>
           </Sider>
           <Content
             id="content"
@@ -1228,6 +1399,8 @@ class Tool extends React.Component {
                         </Select>
                       </Form.Item>
                     )
+                  } else {
+                    return (null);
                   }
                 })}
               </Form>
