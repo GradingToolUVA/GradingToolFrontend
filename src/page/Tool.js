@@ -47,7 +47,8 @@ import {
   deleteComment, 
   postSubmission,
   updateSubmission,
-  updatePage
+  updatePage,
+  refreshPage,
 } from '../api/submission'
 
 import cryptoRandomString from 'crypto-random-string';
@@ -133,6 +134,7 @@ class Tool extends React.Component {
       submission: {},
       genFBModalVisible: false,
       currentGenFB: "",
+      activePanels: [],
     }
   }
 
@@ -294,43 +296,6 @@ class Tool extends React.Component {
           message.error(error.message)
         }
       })
-    /*getCurrentHTML(url)
-      .then((response) => {
-        console.log(response)
-        const __html = response.data.content[0].html
-        iframe.document.open();
-        iframe.document.write(__html);
-        iframe.document.close();
-        iframe.addEventListener("pointerdown", this.handleMouseDown);  
-        iframe.addEventListener("pointerup", this.getText);
-      })
-      .catch((error) => {console.log(error.message)})
-    getAllLinkedPages(url)
-      .then((response) => {
-        const pattern = "/vt.edu/hci-" + sem + "-team-" + team + "/" + phase
-        const links = response.data.content
-        //console.log(links)
-        const sections = []
-        for(const link of links) {
-          if(link.url.includes(pattern) && link.url !== pattern) {
-            link.ptsEarned = 20;
-            link.ptsPossible = 20;
-            const comments = [{text: "No Data", value: -10},
-                              {text: "Incomplete", value: -5},
-                              {text: "Lacking", value: -2},
-                              {text: "Great Job! You did an great one here", value: 0},]
-            link.criteria = [{name:"Preparation", ptsEarned:10, ptsPossible:10, comments:comments,},
-                             {name:"Description", ptsEarned:10, ptsPossible:10, comments:comments,},]
-            link.currComments = []
-            sections.push(link)
-          }
-        }
-        this.setState({
-          phaseSections: sections,
-          loading: false,
-        }, () => {console.log(this.state.phaseSections)}) //what if sections is empty?
-      })
-      .catch((error) => {console.log(error.message)})*/
   }
   
   loadHandler = () => { //on iFrame load
@@ -533,9 +498,9 @@ class Tool extends React.Component {
         sectionName: sectionName,
         points: comment.value,
         commentArray: [{
-          comment: comment.text.fullText,
+          comment: comment.text.shortenedText,
           commentPoints: comment.value,
-          additionalComment: "",
+          additionalComment: comment.text.shortenedText === comment.text.fullText ? "": comment.text.fullText,
           criteriaName: critName,
         }],
       }
@@ -766,6 +731,22 @@ class Tool extends React.Component {
     )
   }
 
+  refreshPage = () => {
+    const p = this.state.pages.find(pg => pg.name === this.state.currentSection)
+    if(p !== undefined) {
+      const encoded_url = {encoded_url: encodeURIComponent(p.url)}
+      refreshPage(encoded_url)
+        .then(response => {
+          message.success("successfully refreshed")
+        })
+        .catch(response => {
+          message.error(response.message)
+        })
+    } else {
+      message.error("Can't refresh this page")
+    }
+  }
+
   /********** FOLLOWING PASSED AS PROPS TO COMMENT **********/
 
   ptValueChange = (value, comment, originalPoints, index) => { //pass to Comment
@@ -775,11 +756,13 @@ class Tool extends React.Component {
       // console.log(value)
       // console.log(originalPoints)
       let indexChanged = 0;
-      const y = comment.y
+      const id = comment.id
+      console.log(comment)
       let ptDiff = value - originalPoints
-      for(let i = 0; i < comments; i++) {
+      for(let i = 0; i < comments.length; i++) {
         const c = comments[i]
-        if(c.y === y) {
+        if(c.id === id) { //NOT GOING IN
+          console.log(ptDiff)
           c.points += ptDiff
           c.commentArray[index].commentPoints = value
           indexChanged = i
@@ -800,7 +783,10 @@ class Tool extends React.Component {
       this.setState({
         comments: comments,
         phaseSections: phaseSections,
-      }, () => {this.saveComment(indexChanged, true)}) //true indicated points have changed
+      }, () => {
+        this.saveComment(indexChanged, true);
+        console.log(comments[indexChanged].points)
+      }) //true indicated points have changed
     }
   }
 
@@ -1042,9 +1028,7 @@ class Tool extends React.Component {
 
   collapseChange = (key) => {
     console.log(key)
-    const name = key[key.length - 1]
-    const section = this.state.phaseSections.find(s => s.name === name)
-    this.loadPhaseSection(section)
+    this.setState({activePanels: key})
   }
 
   openGeneralFeedback = () => {
@@ -1156,7 +1140,7 @@ class Tool extends React.Component {
               <Dropdown overlay={globalMenu} placement="bottomRight" style={{display:"inline-block"}}>
                 <Button icon={<GlobalOutlined />} style={{marginRight:"5px"}}></Button>
               </Dropdown>
-              <Button style={{display:"inline-block", marginRight:"5px"}} icon={<ReloadOutlined />}></Button>
+              <Button style={{display:"inline-block", marginRight:"5px"}} icon={<ReloadOutlined />} onClick={this.refreshPage}></Button>
               {/*<Button style={{display:"inline-block"}} icon={<SaveOutlined />} onClick={this.saveComments}></Button>*/}
             </div>
           </div>
@@ -1249,7 +1233,7 @@ class Tool extends React.Component {
               </Button>
               <Collapse           
                 className="collapse"
-                //onChange={this.collapseChange}
+                onChange={this.collapseChange}
               >
                 {this.state.phaseSections.map((section, index) => {
                   if(this.state.rubric.template.find(sec => sec.name === section.name) !== undefined) {
@@ -1267,7 +1251,13 @@ class Tool extends React.Component {
                             <Button 
                               className="mainGrade" 
                               size="small" 
-                              onClick={() => {this.loadPhaseSection(section)}}
+                              onClick={(event) => {
+                                this.loadPhaseSection(section)
+                                console.log(event)
+                                if(this.state.activePanels.includes(section.name)) {
+                                  event.stopPropagation();
+                                }
+                              }}
                             >
                               <sup>{section.ptsEarned}</sup>&frasl;<sub>{section.ptsPossible}</sub>
                             </Button>

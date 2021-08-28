@@ -47,3 +47,7 @@ export const deleteComment = (id) => {
 export const getComments = (pageId) => {
   return axiosConfig.get("submission/get_comments?id=" + pageId);
 }
+
+export const refreshPage = (encoded_url) => {
+  return axiosConfig.patch("submission/refresh", encoded_url)
+}
