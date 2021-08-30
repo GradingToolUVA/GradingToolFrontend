@@ -207,7 +207,7 @@ class Tool extends React.Component {
                     toAdd.url = ""
                     toAdd.html = ""
                   }
-                  if(rubricObj.template.filter(r => r.name === section.name).length > 0) { //is not extra section  
+                  if(rubricObj.template.find(r => r.name === section.name) !== undefined) { //is not extra section  
                     phaseSections.push(toAdd)
                   } else { //is an extra section
                     //extras.push(section) probably dont need this
@@ -464,7 +464,12 @@ class Tool extends React.Component {
     for(const section of phaseSectionsCopy) { //update the template
       if(section.name === sectionName) {
         section.ptsEarned += comment.value;
+        comment.y = this.state.highlight_textString !== "" ? this.state.yHighlight - 10 : 0
         section.currComments.push(comment)
+        section.currComments.sort((a, b) => {
+          return a.y - b.y;
+        })
+        console.log(section.currComments)
         for(const criteria of section.criteria) {
           if(criteria.name === critName) {
             // section.ptsEarned += comment.value;
@@ -679,10 +684,11 @@ class Tool extends React.Component {
   }
 
   getCurrComments = (currComments) => {
+    console.log(currComments)
     return (
       <div>
         {currComments.map((comment) => (
-          <div style={{color: "black"}}>{comment.value}: {comment.text.fullText}</div>
+          <div style={{color: "black"}}>{comment.value}: {comment.text.shortenedText}</div>
         ))}
       </div>
     )
@@ -716,7 +722,7 @@ class Tool extends React.Component {
             </Button>
           </div>
         ))}
-        <Button  //The CUSTOM comment button
+        {/* <Button  //The CUSTOM comment button
           size="small"
           style={{
             color: "black", 
@@ -726,7 +732,7 @@ class Tool extends React.Component {
           }}
         >
           Custom
-        </Button>
+        </Button> */}
       </div>
     )
   }
@@ -792,10 +798,10 @@ class Tool extends React.Component {
 
   anotherComment = (sectionName, y) => {
     //y is used to find the comment in state.comments
-    const section = this.state.phaseSections.filter(s => {
+    const section = this.state.phaseSections.find(s => {
       return s.name === sectionName
     })
-    const criteria = section[0].criteria
+    const criteria = section.criteria
     return(
       <div>
         {criteria.map((crit) => {
@@ -893,7 +899,7 @@ class Tool extends React.Component {
         for(const s of phaseSections) {
           if(s.name === sectionName) {
             for(let i = 0; i < s.currComments.length; i++) {
-              if(s.currComments[i].value === pts && s.currComments[i].text.fullText === commentText) {
+              if(s.currComments[i].text.shortenedText === commentText) {
                 s.currComments.splice(i, 1)
                 break; //wont match if comment text has been edited
               }
@@ -1220,7 +1226,7 @@ class Tool extends React.Component {
             </div>
             <div className="siderElementContainer">
               <p style={{display:"inline-block"}}>Comment:</p>
-              <Button 
+              {/* <Button 
                 size="small" 
                 icon={<MessageTwoTone />} 
                 onClick={() => {
@@ -1230,7 +1236,7 @@ class Tool extends React.Component {
                   }, -1) //-1 indicates a new comment is to be added
                 }} 
                 style={{display:"inline-block", backgroundColor:"transparent", border:"none"}}>
-              </Button>
+              </Button> */}
               <Collapse           
                 className="collapse"
                 onChange={this.collapseChange}
@@ -1244,7 +1250,22 @@ class Tool extends React.Component {
                           <Popover 
                             className="mainPopover" 
                             placement="right" 
-                            title="Current Comments" 
+                            title={
+                              <div>
+                                <b>Current Comments</b>
+                                <Button 
+                                  size="small" 
+                                  icon={<MessageTwoTone />} 
+                                  onClick={() => {
+                                    this.addComment(section.name, "", {
+                                      text: {shortenedText:"[Write]", fullText:"[Write]"},
+                                      value: 0
+                                    }, -1) //-1 indicates a new comment is to be added
+                                  }} 
+                                  style={{display:"inline-block", backgroundColor:"transparent", border:"none"}}>
+                                </Button>
+                              </div>
+                            } //CUSTOM BUTTON HERE
                             content={this.getCurrComments(section.currComments)} 
                             trigger="hover"
                           >
