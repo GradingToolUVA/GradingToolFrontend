@@ -6,15 +6,26 @@ import {
   message,
   Form,
   Select,
+  DatePicker,
+  Upload,
 } from "antd";
 
 import CSRFToken from '../component/CSRFToken'
 import { postRubric, getRubricByName } from '../api/rubric'
 import { postSubmission } from '../api/submission'
+import {
+  UploadOutlined
+} from "@ant-design/icons";
 
 const {Option} = Select
 
 class Rubric extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      template: {}
+    }
+  }
   makeRubric = () => {
     const phase1 = {
       template: [
@@ -1781,44 +1792,42 @@ class Rubric extends React.Component {
       })
   }
 
+  submitRubric = (values) => {
+    const datetime = values.duedate._d.toJSON().split("T")
+    const date = datetime[0]
+    const dateSplit = date.split("-")
+    const time = datetime[1]
+    const timeSplit = time.split(":")
+    let hour = parseInt(timeSplit[0])
+    hour = hour <= 4 ? 24 + (hour - 4) : hour - 4
+    const toUpload = {
+      template: this.state.template,
+      year: dateSplit[0],
+      month: dateSplit[1],
+      day: dateSplit[2],
+      hour: hour,
+      minute: timeSplit[1],
+      name: values.assignment_name
+    }
+    // postRubric(toUpload)
+    //   .then((response) => {
+    //     message.success("Made Rubrics");
+    //   })
+    //   .catch((error) => {
+    //     message.error(error.message);
+    //   });
+  }
+
   render() {
     return (
       <div>
         <CSRFToken />
-        <Button onClick={this.makeRubric}>Make Rubrics</Button>
+        {/* <Button onClick={this.makeRubric}>Make Rubrics</Button> */}
         <Form
           colon={true}
           labelAlign="left"
-          onFinish={this.submitAssignment}
+          onFinish={this.submitRubric}
         >
-          <Form.Item
-            name="semester"
-            label="Semester"
-            rules={[
-              {
-                required: true,
-                message: "Please select the team",
-              },
-            ]}
-          >
-            <Input placeholder="ex: f20 for Fall 2020" />
-          </Form.Item>
-          <Form.Item
-            name="team_name"
-            label="Team Name"
-            rules={[
-              {
-                required: true,
-                message: "Please select the team",
-              },
-            ]}
-          >
-            <Select>
-              <Option key={1} value="lions">Lions</Option>
-              <Option key={2} value="cats">Cats</Option>
-              <Option key={3} value="tigers">Tigers</Option>
-            </Select>
-          </Form.Item>
           <Form.Item
             name="assignment_name"
             label="Assignment"
@@ -1837,8 +1846,19 @@ class Rubric extends React.Component {
             </Select>
           </Form.Item>
           <Form.Item
-            name="url"
-            label="Submission URL"
+            name="duedate"
+            label="Due Date"
+            rules={[
+              {
+                required: true,
+              },
+            ]}
+          >
+            <DatePicker use12Hours showTime/>
+          </Form.Item>
+          <Form.Item
+            name="template"
+            label="Rubric File"
             rules={[
               {
                 required: true,
@@ -1846,7 +1866,31 @@ class Rubric extends React.Component {
               },
             ]}
           >
-            <Input />
+            <Upload
+              accept=".txt, .json"
+              showUploadList={true}
+              maxCount={1}
+              beforeUpload={file => {
+                const reader = new FileReader();
+
+                reader.onload = e => {
+                  //console.log(e.target.result);
+                  const template = e.target.result
+                  this.setState({
+                    template: template
+                  }, () => {
+                    message.success("File uploaded");
+                  })
+                };
+                reader.readAsText(file);
+                return true;
+              }}
+              onChange={(info) => { //does nothing, just turns it normal state instead of red
+                info.file.status = "done"
+              }}
+            >
+              <Button icon={<UploadOutlined/>}>Upload </Button>
+            </Upload>
           </Form.Item>
           <Button htmlType="submit">Submit</Button>
         </Form>

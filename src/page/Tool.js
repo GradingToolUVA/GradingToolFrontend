@@ -801,10 +801,10 @@ class Tool extends React.Component {
     const section = this.state.phaseSections.find(s => {
       return s.name === sectionName
     })
-    const criteria = section.criteria
+    const criteria = section?.criteria
     return(
       <div>
-        {criteria.map((crit) => {
+        {criteria?.map((crit) => {
           return (
             <div key={crit.name}>
               <Popover placement="right" content={this.getComments(sectionName, crit.name, y)}>
