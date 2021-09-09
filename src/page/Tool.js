@@ -95,11 +95,11 @@ class Tool extends React.Component {
                 criteriaName:, 
               }
           }*/
-      semesters: ["Spring 2019", "Spring 2021", "Fall 2020"],
+      semesters: ["Spring 2019", "Fall 2021", "Spring 2021", "Fall 2020"], //2019 to end
       semester: "", //track current semester to display
-      teams: ["lions", "cats"],
+      teams: ["lions",  "alligators", "baboons", "bears", "camels","cats", "chimps", "dogs", "dolphins", "elephants", "giraffes", "gorillas", "hippos","horses", "orangutans","panthers", "seals", "squirrels", "tigers", "whales"], //lions to proper place
       team: 0, //track current team to display, use integer for arrow navigation
-      phases: ["Phase 2", "Phase 1", "Phase 3", "Phase 4"],
+      phases: ["Phase 2", "Phase 1", "Phase 3", "Phase 4"], //phase 2 back to second
       phase: "",
       phaseSections: [],
         /*{
@@ -265,7 +265,7 @@ class Tool extends React.Component {
       })
       .catch((error) => {
         console.log(error)
-        if(error.response.status === 400) { //then create the submission    
+        if(error.response?.status === 400) { //then create the submission    
           getRubricByName(this.state.phase)
             .then((response) => {
               const rubric_id = response.data.content[0].id
@@ -767,7 +767,7 @@ class Tool extends React.Component {
       let ptDiff = value - originalPoints
       for(let i = 0; i < comments.length; i++) {
         const c = comments[i]
-        if(c.id === id) { //NOT GOING IN
+        if(c.id === id) { //(Fixed) NOT GOING IN
           console.log(ptDiff)
           c.points += ptDiff
           c.commentArray[index].commentPoints = value
@@ -784,6 +784,10 @@ class Tool extends React.Component {
               break;
             }
           }
+          const currCommToChange = s.currComments.find((cc) => {
+            return (cc.text.shortenedText === comment.commentArray[index].comment) && (cc.value === originalPoints);
+          })
+          currCommToChange.value = value
         }
       }
       this.setState({
@@ -792,7 +796,7 @@ class Tool extends React.Component {
       }, () => {
         this.saveComment(indexChanged, true);
         console.log(comments[indexChanged].points)
-      }) //true indicated points have changed
+      }) //true->indicated points have changed
     }
   }
 
@@ -820,18 +824,34 @@ class Tool extends React.Component {
   }
 
   editCommentText = (y, newCommentText, index) => { //pass to Comment
-    const commentsCopy = this.state.comments
+    const commentsCopy = [...this.state.comments]
+    const phaseSections = [...this.state.phaseSections]
     let indexChanged = 0;
+    let phaseSection = ""; //string to store the phaseSection that this comment is in
+    let pts = 0; //int to store the comment value of this comment
+    let oldCommentText = ""; //string to store the old comment text of this comment
     for(let i = 0; i < commentsCopy.length; i++) {
       const comment = commentsCopy[i]
       if(comment.y === y) {
+        phaseSection = comment.sectionName
+        pts = comment.commentArray[index].commentPoints
+        oldCommentText = comment.commentArray[index].comment
         comment.commentArray[index].comment = newCommentText
         indexChanged = i
       }
     }
+    for(const s of phaseSections) {
+      if(s.name === phaseSection) {
+        const currCommToChange = s.currComments.find((cc) => {
+          return (cc.text.shortenedText === oldCommentText) && (cc.value === pts);
+        })
+        currCommToChange.text.shortenedText = newCommentText
+      }
+    }
     this.setState({
-      comments: commentsCopy
-    }, () => {this.saveComment(indexChanged, false)})
+      comments: commentsCopy,
+      phaseSections: phaseSections,
+    }, () => {this.saveComment(indexChanged, true)}) //naming/logic flaw: ptsChanged will be true here only because we need to update phaseSections' currComments
   }
 
   deleteAdditionalComment = (y, index) => { //pass to Comment

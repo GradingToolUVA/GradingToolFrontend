@@ -17,11 +17,15 @@ import {
   Modal,
   List
 } from "antd";
+import {
+  ReloadOutlined,
+} from "@ant-design/icons";
 
 import { 
   getSubmission, 
   getSubmissionPages, 
   getComments,
+  refreshPage
 } from '../api/submission'
 
 const { Header, Sider, Content } = Layout;
@@ -40,6 +44,9 @@ export default class Export extends React.Component {
   }
 
   componentDidMount() {
+    message.config({
+      top: 60,
+    })
     getSubmission({exportID: this.props.match.params.id})
       .then((submissionResponse) => {
         message.success("got submission")
@@ -137,6 +144,21 @@ export default class Export extends React.Component {
     return i;
   }
 
+  refreshPage = () => {
+    const patchReqs = []
+    for(const p of this.state.commentedPages) {
+      const encoded_url = {encoded_url: encodeURIComponent(p.page.url)}
+      patchReqs.push(refreshPage(encoded_url))
+    } 
+    Promise.all(patchReqs)
+      .then(response => {
+        window.location.reload()
+      })
+      .catch(response => {
+        message.error("Could not refresh")
+      })
+  }
+
   computeGrade = (submission) => {
     let earned = 0;
     let possible = 0;
@@ -164,7 +186,9 @@ export default class Export extends React.Component {
             zIndex: 1031
           }}
         >
-
+          <div style={{display:"inline-block", float:"right"}}>
+            <Button style={{display:"inline-block"}} icon={<ReloadOutlined />} onClick={this.refreshPage}></Button>
+          </div>
         </Header>
         <Layout>
           <Sider
@@ -216,7 +240,7 @@ export default class Export extends React.Component {
                         {fb.map((t) => {
                           return (
                             <div style={{color:"black"}}>
-                              <p style={{margin:"0"}}>{t}hohohohohohefwefwefewfwefewf</p>
+                              <p style={{margin:"0"}}>{t}</p>
                               <br/>
                             </div>
                           )
