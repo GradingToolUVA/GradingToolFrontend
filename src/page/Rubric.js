@@ -1802,11 +1802,11 @@ class Rubric extends React.Component {
     hour = hour <= 4 ? 24 + (hour - 4) : hour - 4
     const toUpload = {
       template: this.state.template,
-      year: dateSplit[0],
-      month: dateSplit[1],
-      day: dateSplit[2],
-      hour: hour,
-      minute: timeSplit[1],
+      year: parseInt(dateSplit[0]),
+      month: parseInt(dateSplit[1]),
+      day: parseInt(dateSplit[2]),
+      hour: parseInt(hour),
+      minute: parseInt(timeSplit[1]),
       name: values.assignment_name
     }
     postRubric(toUpload)
