@@ -1806,7 +1806,7 @@ class Rubric extends React.Component {
       month: parseInt(dateSplit[1]),
       day: parseInt(dateSplit[2]),
       hour: parseInt(hour),
-      minute: parseInt(timeSplit[1]),
+      minute: parseInt(timeSplit[1] - 1),
       name: values.assignment_name
     }
     postRubric(toUpload)
