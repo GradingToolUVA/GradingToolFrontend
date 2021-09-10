@@ -1809,13 +1809,13 @@ class Rubric extends React.Component {
       minute: timeSplit[1],
       name: values.assignment_name
     }
-    // postRubric(toUpload)
-    //   .then((response) => {
-    //     message.success("Made Rubrics");
-    //   })
-    //   .catch((error) => {
-    //     message.error(error.message);
-    //   });
+    postRubric(toUpload)
+      .then((response) => {
+        message.success("Made Rubric");
+      })
+      .catch((error) => {
+        message.error(error.message);
+      });
   }
 
   render() {
