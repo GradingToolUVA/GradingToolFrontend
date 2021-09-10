@@ -1799,14 +1799,14 @@ class Rubric extends React.Component {
     const time = datetime[1]
     const timeSplit = time.split(":")
     let hour = parseInt(timeSplit[0])
-    hour = hour <= 4 ? 24 + (hour - 4) : hour - 4
+    hour = hour < 4 ? 24 + (hour - 4) : hour - 4 //gmt to est conversion
     const toUpload = {
       template: this.state.template,
       year: parseInt(dateSplit[0]),
       month: parseInt(dateSplit[1]),
       day: parseInt(dateSplit[2]),
       hour: parseInt(hour),
-      minute: parseInt(timeSplit[1] - 1),
+      minute: parseInt(timeSplit[1]),
       name: values.assignment_name
     }
     postRubric(toUpload)
