@@ -1876,8 +1876,10 @@ class Rubric extends React.Component {
                 reader.onload = e => {
                   //console.log(e.target.result);
                   const template = e.target.result
+                  const jsontemp = JSON.parse(template)
+                  //console.log(jsontemp.template)
                   this.setState({
-                    template: template
+                    template: jsontemp.template
                   }, () => {
                     message.success("File uploaded");
                   })
