@@ -101,6 +101,8 @@ export default class Export extends React.Component {
   loadHandler = () => { //on iFrame load
     //set the height to fit content
     var submission = document.getElementById("submission");
+    //submission.style.height = submission.contentWindow.document.body.scrollHeight + 'px'
+    submission.style.height = '0px'
     submission.style.height = submission.contentWindow.document.body.scrollHeight + 'px'
   }
 
@@ -121,23 +123,26 @@ export default class Export extends React.Component {
   highlightComment = (comment) => { //go through the innerHTML of the div inside the body
     var submission = document.getElementById("submission");
     var iframeHTML = submission.contentDocument || submission.contentWindow.document;
-    //console.log(iframeHTML.childNodes)
-    const nodes = iframeHTML.childNodes[0]?.childNodes[1]?.childNodes[0] //gets to the html->body->div
-    let innerHTML = nodes?.innerHTML //innerHTML of div wrapper
+    const body = iframeHTML.childNodes[0].childNodes[1]
+    console.log(body)
+    if(body !== undefined){
+    let innerHTML = body.innerHTML //innerHTML of body
     for(var i = 0; i < comment.text.length; i++) {
       const text = comment.text[i].text //HERE
-      var index = this.nthIndexOf(innerHTML, text, comment.text[i].n);
+      let index = this.nthIndexOf(innerHTML, text, comment.text[i].n);
+      console.log(index)
       if (index >= 0) { 
         innerHTML = innerHTML.substring(0,index) + '<span style="background-color: #BDB76B">' + innerHTML.substring(index,index+text.length) + '</span>' + innerHTML.substring(index + text.length);
-        nodes.innerHTML = innerHTML;
+        body.innerHTML = innerHTML;
         //update the state too because the html nodes have changed
       }
+    }
     }
   }
 
   nthIndexOf(str, match, n){ //Find index of nth occurance of match in str
     let i= -1;
-    while(n-- && i++ < str.length) {
+    while(n-- && i++ < str?.length) {
       i = str.indexOf(match, i);
       if (i < 0) { break }
     }

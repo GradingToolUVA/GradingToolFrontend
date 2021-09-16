@@ -332,31 +332,33 @@ class Tool extends React.Component {
   }
 
   loadPhaseSection = (section) => {
-    var submission = document.getElementById('submission');
-    var iframe = submission.contentWindow || ( submission.contentDocument.document || submission.contentDocument);
-    iframe.document.open();
-    iframe.document.write(section.html);
-    iframe.document.close();
-    iframe.addEventListener("pointerdown", this.handleMouseDown);  
-    iframe.addEventListener("pointerup", this.getText);
-    // console.log("HTML LOADED")
-    const p = this.state.pages.filter(p => p.name === section.name)
-    if(p.length > 0) {
-      const id = p[0].id
-      getComments(id)
-        .then((response) => {
-          const responseComments = response.data.content
-          console.log(responseComments)
-          this.setState({
-            currentSection: section.name,
-            comments: responseComments,
+    if(this.state.pages.length > 1) {
+      var submission = document.getElementById('submission');
+      var iframe = submission.contentWindow || ( submission.contentDocument.document || submission.contentDocument);
+      iframe.document.open();
+      iframe.document.write(section.html);
+      iframe.document.close();
+      iframe.addEventListener("pointerdown", this.handleMouseDown);  
+      iframe.addEventListener("pointerup", this.getText);
+      // console.log("HTML LOADED")
+      const p = this.state.pages.filter(p => p.name === section.name)
+      if(p.length > 0) {
+        const id = p[0].id
+        getComments(id)
+          .then((response) => {
+            const responseComments = response.data.content
+            console.log(responseComments)
+            this.setState({
+              currentSection: section.name,
+              comments: responseComments,
+            })
           })
-        })
-        .catch((error) => {
-          message.error(error.message)
-        })
-    } else {
-      console.log("Page for this section is not found.")
+          .catch((error) => {
+            message.error(error.message)
+          })
+      } else {
+        console.log("Page for this section is not found.")
+      }
     }
   }
 
@@ -463,6 +465,8 @@ class Tool extends React.Component {
     const phaseSectionsCopy = [...this.state.phaseSections]
     for(const section of phaseSectionsCopy) { //update the template
       if(section.name === sectionName) {
+        console.log(section.name)
+        console.log(sectionName)
         section.ptsEarned += comment.value;
         comment.y = this.state.highlight_textString !== "" ? this.state.yHighlight - 10 : 0
         section.currComments.push(comment)
@@ -777,9 +781,10 @@ class Tool extends React.Component {
       }
       for(const s of phaseSections) {
         if(s.name === comment.sectionName) {
+          s.ptsEarned += ptDiff;
           for(const c of s.criteria) {
             if(c.name === comment.commentArray[index].criteriaName) {
-              s.ptsEarned += ptDiff;
+              //s.ptsEarned += ptDiff;
               c.ptsEarned += ptDiff;
               break;
             }
@@ -1246,7 +1251,7 @@ class Tool extends React.Component {
             </div>
             <div className="siderElementContainer">
               <p style={{display:"inline-block"}}>Comment:</p>
-              {/* <Button 
+              <Button 
                 size="small" 
                 icon={<MessageTwoTone />} 
                 onClick={() => {
@@ -1256,7 +1261,7 @@ class Tool extends React.Component {
                   }, -1) //-1 indicates a new comment is to be added
                 }} 
                 style={{display:"inline-block", backgroundColor:"transparent", border:"none"}}>
-              </Button> */}
+              </Button>
               <Collapse           
                 className="collapse"
                 onChange={this.collapseChange}
@@ -1276,11 +1281,15 @@ class Tool extends React.Component {
                                 <Button 
                                   size="small" 
                                   icon={<MessageTwoTone />} 
-                                  onClick={() => {
+                                  onClick={(event) => {
                                     this.addComment(section.name, "", {
                                       text: {shortenedText:"[Write]", fullText:"[Write]"},
                                       value: 0
                                     }, -1) //-1 indicates a new comment is to be added
+                                    //console.log(event)
+                                    if(this.state.activePanels.includes(section.name)) {
+                                      event.stopPropagation();
+                                    }
                                   }} 
                                   style={{display:"inline-block", backgroundColor:"transparent", border:"none"}}>
                                 </Button>
