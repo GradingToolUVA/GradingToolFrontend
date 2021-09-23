@@ -37,7 +37,7 @@ import '../asset/css/ToolContent.css'
 import '../asset/css/ToolSider.css'
 
 import { getCurrentHTML, getAllLinkedPages } from "../api/htmls";
-import { getRubricByName } from '../api/rubric'
+import { getRubricByName } from '../api/rubric';
 import { 
   getSubmission, 
   getSubmissionPages, 
@@ -49,7 +49,8 @@ import {
   updateSubmission,
   updatePage,
   refreshPage,
-} from '../api/submission'
+} from '../api/submission';
+import { getLastSession, postLastSession } from "../api/tool";
 
 import cryptoRandomString from 'crypto-random-string';
 
@@ -139,30 +140,40 @@ class Tool extends React.Component {
   }
 
   componentDidMount() {
-    window.addEventListener('resize', (event) => {
-      console.log(event)
-      var submission = document.getElementById("submission");
-      const body = submission.contentWindow.document.body
-      if(body.scrollWidth > body.clientWidth) {
-        console.log(body.getAttribute('width'))
-        console.log(body.scrollWidth)
-        console.log(body.clientWidth)
-        console.log(Math.round((body.scrollWidth - body.clientWidth) / 2))
-        submission.scrollLeft = Math.round((body.scrollWidth - body.clientWidth) / 2) 
-      }
-    });
+    // window.addEventListener('resize', (event) => {
+    //   console.log(event)
+    //   var submission = document.getElementById("submission");
+    //   const body = submission.contentWindow.document.body
+    //   if(body.scrollWidth > body.clientWidth) {
+    //     console.log(body.getAttribute('width'))
+    //     console.log(body.scrollWidth)
+    //     console.log(body.clientWidth)
+    //     console.log(Math.round((body.scrollWidth - body.clientWidth) / 2))
+    //     submission.scrollLeft = Math.round((body.scrollWidth - body.clientWidth) / 2) 
+    //   }
+    // });
     var content = document.getElementById("content")
     const yOffset = content.getBoundingClientRect().top; //left to get x-offset
     message.config({
       top: 60,
     })
     //console.log("Y-offset:" + yOffset)
-    this.setState({
-      yOffset: yOffset, 
-      semester: this.state.semesters[0],
-      team: 0,
-      phase: this.state.phases[0], 
-    }, () => {this.loadSubmission()})
+    getLastSession()
+      .then((response) => {
+        this.setState({
+          yOffset: yOffset, 
+          semester: response.data.content.semester,
+          team: response.data.content.team,
+          phase: response.data.content.phase, 
+        }, () => {this.loadSubmission()})
+      })
+      .catch((error) => {})
+    // this.setState({
+    //   yOffset: yOffset, 
+    //   semester: this.state.semesters[0],
+    //   team: //0,
+    //   phase: this.state.phases[0], 
+    // }, () => {this.loadSubmission()})
   }
 
   loadSubmission = () => {
@@ -295,6 +306,21 @@ class Tool extends React.Component {
         } else {
           message.error(error.message)
         }
+      })
+    const currentSession = {
+      team: this.state.team,
+      semester: this.state.semester,
+      phase: this.state.phase,
+    }
+    const params = {
+      last_session: currentSession,
+    }
+    postLastSession(params)
+      .then((response) => {
+        console.log(response)
+      })
+      .catch((error) => {
+        console.log(error)
       })
   }
   
@@ -646,14 +672,16 @@ class Tool extends React.Component {
   changeSemester = (value) => {
     this.setState({
       semester: value,
-      comments: []
+      comments: [],
+      systemText: "",
     }, () => {this.loadSubmission()})
   }
   changeTeam = (value) => {
     const index = this.state.teams.indexOf(value)
     this.setState({
       team: index,
-      comments: []
+      comments: [],
+      systemText: "",
     }, () => {this.loadSubmission()})
   }
   changeTeamBack = () => {
@@ -665,7 +693,8 @@ class Tool extends React.Component {
     }
     this.setState({
       team: index,
-      comments: []
+      comments: [],
+      systemText: "",
     }, () => {this.loadSubmission()})
   }
   changeTeamNext = () => {
@@ -677,13 +706,15 @@ class Tool extends React.Component {
     }
     this.setState({
       team: index,
-      comments: []
+      comments: [],
+      systemText: "",
     }, () => {this.loadSubmission()})
   }
   changePhase = (value) => {
     this.setState({
       phase: value,
-      comments: []
+      comments: [],
+      systemText: "",
     }, () => {this.loadSubmission()})
   }
 
