@@ -160,14 +160,17 @@ class Tool extends React.Component {
     //console.log("Y-offset:" + yOffset)
     getLastSession()
       .then((response) => {
+        console.log(response)
         this.setState({
           yOffset: yOffset, 
-          semester: response.data.content.semester,
-          team: response.data.content.team,
-          phase: response.data.content.phase, 
+          semester: response.data.content !== null ? response.data.content.semester : "f19",
+          team: response.data.content !== null ? response.data.content.team : 0,
+          phase: response.data.content !== null ? response.data.content.phase : "Phase 1", 
         }, () => {this.loadSubmission()})
       })
-      .catch((error) => {})
+      .catch((error) => {
+        console.log(error)
+      })
     // this.setState({
     //   yOffset: yOffset, 
     //   semester: this.state.semesters[0],
