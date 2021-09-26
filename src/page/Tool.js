@@ -96,12 +96,12 @@ class Tool extends React.Component {
                 criteriaName:, 
               }
           }*/
-      semesters: ["Spring 2019", "Fall 2021", "Spring 2021", "Fall 2020"], //2019 to end
-      semester: "", //track current semester to display
-      teams: ["lions",  "alligators", "baboons", "bears", "camels","cats", "chimps", "dogs", "dolphins", "elephants", "giraffes", "gorillas", "hippos","horses", "orangutans","panthers", "seals", "squirrels", "tigers", "whales"], //lions to proper place
+      semesters: ["Fall 2021", "Spring 2021", "Fall 2020", "Spring 2020", "Fall 2019", "Spring 2019"], //2019 to end
+      semester: "Fall 2021", //track current semester to display
+      teams: ["lions", "alligators", "baboons", "bears", "camels", "cats", "chimps", "dogs", "dolphins", "elephants", "giraffes", "gorillas", "hippos","horses", "orangutans","panthers", "seals", "squirrels", "tigers", "whales"], //lions to proper place
       team: 0, //track current team to display, use integer for arrow navigation
-      phases: ["Phase 2", "Phase 1", "Phase 3", "Phase 4"], //phase 2 back to second
-      phase: "",
+      phases: ["Phase 1", "Phase 2", "Phase 3", "Phase 4"], //phase 2 back to second
+      phase: "Phase 1", //we give these initial values for sem, team, and phase because the Select uses value as these state vars
       phaseSections: [],
         /*{
           name:, //unique
@@ -163,7 +163,7 @@ class Tool extends React.Component {
         console.log(response)
         this.setState({
           yOffset: yOffset, 
-          semester: response.data.content !== null ? response.data.content.semester : "f19",
+          semester: response.data.content !== null ? response.data.content.semester : "Fall 2021",
           team: response.data.content !== null ? response.data.content.team : 0,
           phase: response.data.content !== null ? response.data.content.phase : "Phase 1", 
         }, () => {this.loadSubmission()})
@@ -180,6 +180,23 @@ class Tool extends React.Component {
   }
 
   loadSubmission = () => {
+    /* Store the session in in Cookies */
+    const currentSession = {
+      team: this.state.team,
+      semester: this.state.semester,
+      phase: this.state.phase,
+    }
+    const params = {
+      last_session: currentSession,
+    }
+    postLastSession(params)
+      .then((response) => {
+        console.log(response)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+    /* *********** */
     var submission = document.getElementById('submission');
     var iframe = submission.contentWindow || ( submission.contentDocument.document || submission.contentDocument);
     let baseURL = "https://sites.google.com/vt.edu/hci-"
@@ -295,7 +312,8 @@ class Tool extends React.Component {
               }
               postSubmission(params)
                 .then((response) => {
-                  message.success("New submission detected, please refresh")
+                  //message.success("New submission detected, please refresh")
+                  window.location.reload()
                 })
                 .catch((error) => {
                   message.error(error.message)
@@ -309,21 +327,6 @@ class Tool extends React.Component {
         } else {
           message.error(error.message)
         }
-      })
-    const currentSession = {
-      team: this.state.team,
-      semester: this.state.semester,
-      phase: this.state.phase,
-    }
-    const params = {
-      last_session: currentSession,
-    }
-    postLastSession(params)
-      .then((response) => {
-        console.log(response)
-      })
-      .catch((error) => {
-        console.log(error)
       })
   }
   
@@ -1224,7 +1227,7 @@ class Tool extends React.Component {
             <div className="siderElementContainer">Semester: 
               <Select 
                 className="semesterSelect"
-                defaultValue={this.state.semesters[0]} 
+                value={this.state.semester} 
                 onChange={(value) => this.changeSemester(value)}
                 size="small"
               >
@@ -1259,7 +1262,7 @@ class Tool extends React.Component {
             </div>
             <div className="siderElementContainer">Phase: 
               <Select 
-                defaultValue={this.state.phases[0]} 
+                defaultValue={this.state.phase} 
                 onChange={(value) => this.changePhase(value)}
                 size="small"
                 style={{paddingLeft:"5px", paddingTop:"5px"}}
