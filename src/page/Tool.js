@@ -276,13 +276,14 @@ class Tool extends React.Component {
                 })
                 //maybe set matched as true if extras length is <= 1, because that means only the Landing Page is an extra so no matching needed
                 //LOAD THE ACTUAL HTML
-                const landingPg = pages.filter(p => p.name === "Landing Page")[0]
-                const __html = landingPg.html
-                iframe.document.open();
-                iframe.document.write(__html);
-                iframe.document.close();
-                iframe.addEventListener("pointerdown", this.handleMouseDown);  
-                iframe.addEventListener("pointerup", this.getText);
+                const landingPg = pages.find(p => p.name === "Landing Page")
+                this.loadPhaseSection(landingPg)
+                // const __html = landingPg.html
+                // iframe.document.open();
+                // iframe.document.write(__html);
+                // iframe.document.close();
+                // iframe.addEventListener("pointerdown", this.handleMouseDown);  
+                // iframe.addEventListener("pointerup", this.getText);
               })
               .catch((error) => {
                 message.error(error.message)
@@ -364,7 +365,7 @@ class Tool extends React.Component {
   }
 
   loadPhaseSection = (section) => {
-    if(this.state.pages.length > 1) {
+    if(this.state.pages.length >= 1) { //>1 or >=1?
       var submission = document.getElementById('submission');
       var iframe = submission.contentWindow || ( submission.contentDocument.document || submission.contentDocument);
       iframe.document.open();
@@ -1262,7 +1263,7 @@ class Tool extends React.Component {
             </div>
             <div className="siderElementContainer">Phase: 
               <Select 
-                defaultValue={this.state.phase} 
+                value={this.state.phase} 
                 onChange={(value) => this.changePhase(value)}
                 size="small"
                 style={{paddingLeft:"5px", paddingTop:"5px"}}
