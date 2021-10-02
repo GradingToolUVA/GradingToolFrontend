@@ -84,6 +84,7 @@ export default class Export extends React.Component {
                   // iframe.document.open();
                   // iframe.document.write(__html);
                   // iframe.document.close();
+                  console.log(this.state.submission)
                   this.loadPage({key:this.state.commentsToDisplay})
                 })
               })
@@ -217,6 +218,18 @@ export default class Export extends React.Component {
                     {cp.page.name} {submissionSection !== undefined && <b>({submissionSection.ptsEarned}/{submissionSection.ptsPossible})</b>}
                   </Menu.Item>
                 )
+              })}
+            </Menu>
+            <Menu
+              theme="dark"
+            >
+              {this.state.submission.template?.map((section, index) => {
+                return this.state.commentedPages.length === 1 ? 
+                  <Menu.Item key={index} style={{whiteSpace: 'normal', height: 'auto'}}>
+                    {section.name} {section !== undefined && <b>({section.ptsEarned}/{section.ptsPossible})</b>}
+                  </Menu.Item>
+                :
+                  <br/>
               })}
             </Menu>
             <hr/>
