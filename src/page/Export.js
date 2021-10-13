@@ -105,9 +105,16 @@ export default class Export extends React.Component {
     //submission.style.height = submission.contentWindow.document.body.scrollHeight + 'px'
     submission.style.height = '0px'
     submission.style.height = submission.contentWindow.document.body.scrollHeight + 'px'
+    const pageToLoad = this.state.commentedPages[this.state.commentsToDisplay]
+    if(pageToLoad !== undefined) {
+      for(const c of pageToLoad.comments) {
+        this.highlightComment(c)
+      }
+    }
   }
 
   loadPage = (item) => {
+    console.log(item)
     const pageToLoad = this.state.commentedPages[item.key]
     var submission = document.getElementById('submission');
     var iframe = submission.contentWindow || ( submission.contentDocument.document || submission.contentDocument);
@@ -115,9 +122,7 @@ export default class Export extends React.Component {
     iframe.document.open();
     iframe.document.write(__html);
     iframe.document.close();
-    for(const c of pageToLoad.comments) {
-      this.highlightComment(c)
-    }
+    console.log(pageToLoad.comments)
     this.setState({commentsToDisplay: item.key})
   }
 
@@ -127,17 +132,17 @@ export default class Export extends React.Component {
     const body = iframeHTML.childNodes[0].childNodes[1]
     console.log(body)
     if(body !== undefined){
-    let innerHTML = body.innerHTML //innerHTML of body
-    for(var i = 0; i < comment.text.length; i++) {
-      const text = comment.text[i].text //HERE
-      let index = this.nthIndexOf(innerHTML, text, comment.text[i].n);
-      console.log(index)
-      if (index >= 0) { 
-        innerHTML = innerHTML.substring(0,index) + '<span style="background-color: #BDB76B">' + innerHTML.substring(index,index+text.length) + '</span>' + innerHTML.substring(index + text.length);
-        body.innerHTML = innerHTML;
-        //update the state too because the html nodes have changed
+      let innerHTML = body.innerHTML //innerHTML of body
+      for(var i = 0; i < comment.text.length; i++) {
+        const text = comment.text[i].text //HERE
+        let index = this.nthIndexOf(innerHTML, text, comment.text[i].n);
+        console.log(index)
+        if (index >= 0) { 
+          innerHTML = innerHTML.substring(0,index) + '<span style="background-color: #BDB76B">' + innerHTML.substring(index,index+text.length) + '</span>' + innerHTML.substring(index + text.length);
+          body.innerHTML = innerHTML;
+          //update the state too because the html nodes have changed
+        }
       }
-    }
     }
   }
 
