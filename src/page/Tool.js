@@ -737,15 +737,24 @@ class Tool extends React.Component {
   }
 
   getComments = (sectionName, critName, y=-1) => { //Display the comments interface
-    const section = this.state.phaseSections.filter(s => {
+    // const section = this.state.phaseSections.find(s => {
+    //   return s.name === sectionName
+    // })
+    // const crit = section.criteria.filter(c => {
+    //   return c.name === critName
+    // })
+    // console.log(crit)
+      //instead, use the RUBRIC since getComments should only be called on a section existing inside the rubric
+    const rubricSection = this.state.rubric.template.find(s => {
       return s.name === sectionName
     })
-    const crit = section[0].criteria.filter(c => {
+    const rubricCrit = rubricSection?.criteria.find(c => {
       return c.name === critName
     })
+    console.log(rubricCrit)
     return (
       <div>
-        {crit[0].comments.map((comment) => (
+        {rubricCrit?.comments.map((comment) => (
           <div>
             <Button 
               size="small"
