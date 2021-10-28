@@ -3,21 +3,28 @@ import React from 'react';
 import {
   Button,
   Input,
+  InputNumber,
   message,
   Form,
   Select,
   DatePicker,
   Upload,
+  Typography,
+  Divider,
+  Space
 } from "antd";
 
 import CSRFToken from '../component/CSRFToken'
 import { postRubric, getRubricByName } from '../api/rubric'
 import { postSubmission } from '../api/submission'
 import {
-  UploadOutlined
+  UploadOutlined,
+  PlusOutlined,
+  MinusCircleOutlined
 } from "@ant-design/icons";
 
 const {Option} = Select
+const { Title } = Typography;
 
 class Rubric extends React.Component {
   constructor(props) {
@@ -26,6 +33,8 @@ class Rubric extends React.Component {
       template: {}
     }
   }
+
+  //********** Outdated methods **********
   makeRubric = () => {
     const phase1 = {
       template: [
@@ -1791,8 +1800,9 @@ class Rubric extends React.Component {
         console.log(error.response)
       })
   }
+  // ********* End of outdated Methods *********
 
-  submitRubric = (values) => {
+  submitRubric = (values) => { //submits a JSON file rubric
     const datetime = values.duedate._d.toJSON().split("T")
     const date = datetime[0]
     const dateSplit = date.split("-")
@@ -1820,8 +1830,232 @@ class Rubric extends React.Component {
 
   render() {
     return (
-      <div>
-        <CSRFToken />
+      <div
+        style={{
+          paddingLeft: "20px",
+          paddingRight: "10px",
+          paddingBottom: "20px",
+        }}
+      >
+        <Divider orientation="left">Create Rubric</Divider>
+        <Form
+          colon={true}
+          labelAlign="left"
+          onFinish={this.submitAssignment}
+        >
+          <Form.Item
+            name="assignment_name"
+            label="Assignment"
+            rules={[
+              {
+                required: true,
+                message: "Please select the assignment",
+              },
+            ]}
+          >
+            <Select
+              style={{width:"250px"}}
+            >
+              <Option key={1} value="Phase 1">Phase 1</Option>
+              <Option key={2} value="Phase 2">Phase 2</Option>
+              <Option key={3} value="Phase 3">Phase 3</Option>
+              <Option key={4} value="Phase 4">Phase 4</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="duedate"
+            label="Due Date"
+            rules={[
+              {
+                required: true,
+              },
+            ]}
+          >
+            <DatePicker use12Hours showTime/>
+          </Form.Item>
+          <div>
+            <Form.List name="users">
+              {(fields, { add, remove }) => {
+                return (
+                  <div
+                    style={{
+                      paddingLeft: "10px",
+                      paddingRight: "10px",
+                      backgroundColor : "#9fe6e2",
+                    }}
+                  >
+                    {fields.map(field => (
+                      <>
+                        <Divider>New Section</Divider>
+                        <Space key={field.key} style={{ display: 'flex' }} align="start">
+                          <Form.Item
+                            {...field}
+                            name={[field.name, 'first']}
+                            fieldKey={[field.fieldKey, 'first']}
+                            rules={[{ required: true, message: 'Missing section name' }]}
+                          >
+                            <Input placeholder="Section Name" />
+                          </Form.Item>
+                          <Form.Item
+                            {...field}
+                            name={[field.name, 'last']}
+                            fieldKey={[field.fieldKey, 'last']}
+                            rules={[{ required: true, message: 'Missing last name' }]}
+                          >
+                            <InputNumber
+                              size="medium"
+                              placeholder="Points"
+                            />
+                          </Form.Item>
+
+                          <MinusCircleOutlined
+                            onClick={() => {
+                              remove(field.name);
+                            }}
+                          />
+                        </Space>
+                        <div 
+                          style={{
+                            paddingLeft: "20px",
+                            paddingRight: "10px",
+                            backgroundColor:"#9ac8de"
+                          }}
+                        >
+                          <Form.List name={[field.name, 'nicknames']}>
+                            {(nicknames, { add, remove }) => {
+                              return (
+                                <div>
+                                  {nicknames.map(nickname => (
+                                    <>
+                                      <Space key={nickname.key} style={{ display: 'flex' }} align="start">
+                                        <Form.Item
+                                          {...field}
+                                          name={[field.name, 'first']}
+                                          fieldKey={[field.fieldKey, 'first']}
+                                          rules={[{ required: true, message: 'Missing section name' }]}
+                                        >
+                                          <Input placeholder="Criteria Name" />
+                                        </Form.Item>
+                                        <Form.Item
+                                          {...field}
+                                          name={[field.name, 'last']}
+                                          fieldKey={[field.fieldKey, 'last']}
+                                          rules={[{ required: true, message: 'Missing points' }]}
+                                        >
+                                          <InputNumber
+                                            size="medium"
+                                            placeholder="Points"
+                                          />
+                                        </Form.Item>
+
+                                        <MinusCircleOutlined
+                                          onClick={() => {
+                                            remove(nickname.name);
+                                          }}
+                                        />
+                                      </Space>
+                                      <div 
+                                        style={{
+                                          paddingLeft: "30px",
+                                          paddingRight: "10px",
+                                          backgroundColor:"#638190"
+                                        }}
+                                      >
+                                        <Form.List name={[field.name, 'nicknames']}>
+                                          {(nicknames, { add, remove }) => {
+                                            return (
+                                              <div>
+                                                {nicknames.map(nickname => (
+                                                  <>
+                                                    <Space key={nickname.key} style={{ display: 'flex' }} align="start">
+                                                      <Form.Item
+                                                        {...field}
+                                                        name={[field.name, 'first']}
+                                                        fieldKey={[field.fieldKey, 'first']}
+                                                        rules={[{ required: true, message: 'Missing section name' }]}
+                                                      >
+                                                        <Input placeholder="Comment Text" />
+                                                      </Form.Item>
+                                                      <Form.Item
+                                                        {...field}
+                                                        name={[field.name, 'last']}
+                                                        fieldKey={[field.fieldKey, 'last']}
+                                                        rules={[{ required: true, message: 'Missing points' }]}
+                                                      >
+                                                        <InputNumber
+                                                          size="medium"
+                                                          placeholder="Points"
+                                                        />
+                                                      </Form.Item>
+
+                                                      <MinusCircleOutlined
+                                                        onClick={() => {
+                                                          remove(nickname.name);
+                                                        }}
+                                                      />
+                                                    </Space>
+                                                  </>
+                                                ))}
+
+                                                <Form.Item>
+                                                  <Button
+                                                    type="dashed"
+                                                    onClick={() => {
+                                                      add();
+                                                    }}
+                                                    block
+                                                    style={{marginLeft:"10%",width:"80%"}}
+                                                  >
+                                                    <PlusOutlined /> Add Comment
+                                                  </Button>
+                                                </Form.Item>
+                                              </div>
+                                            );
+                                          }}
+                                        </Form.List>
+                                      </div>
+                                    </>
+                                  ))}
+
+                                  <Form.Item>
+                                    <Button
+                                      type="dashed"
+                                      onClick={() => {
+                                        add();
+                                      }}
+                                      block
+                                      style={{marginLeft:"5%",width:"90%"}}
+                                    >
+                                      <PlusOutlined /> Add Criteria
+                                    </Button>
+                                  </Form.Item>
+                                </div>
+                              );
+                            }}
+                          </Form.List>
+                        </div>
+                      </>
+                    ))}
+
+                    <Form.Item>
+                      <Button
+                        type="solid"
+                        onClick={() => {
+                          add();
+                        }}
+                        block
+                      >
+                        <PlusOutlined /> Add Section
+                      </Button>
+                    </Form.Item>
+                  </div>
+                );
+              }}
+            </Form.List>  
+          </div>
+          <Button htmlType="submit" type="primary">Submit</Button>
+        </Form>
+        <Divider orientation="left">Upload rubric with JSON Template</Divider>
         {/* <Button onClick={this.makeRubric}>Make Rubrics</Button> */}
         <Form
           colon={true}
@@ -1838,7 +2072,9 @@ class Rubric extends React.Component {
               },
             ]}
           >
-            <Select>
+            <Select
+              style={{width:"250px"}}
+            >
               <Option key={1} value="Phase 1">Phase 1</Option>
               <Option key={2} value="Phase 2">Phase 2</Option>
               <Option key={3} value="Phase 3">Phase 3</Option>
@@ -1894,7 +2130,7 @@ class Rubric extends React.Component {
               <Button icon={<UploadOutlined/>}>Upload </Button>
             </Upload>
           </Form.Item>
-          <Button htmlType="submit">Submit</Button>
+          <Button htmlType="submit" type="primary">Submit</Button>
         </Form>
       </div>
     );
