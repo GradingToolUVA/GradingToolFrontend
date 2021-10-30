@@ -1879,8 +1879,8 @@ class Rubric extends React.Component {
                 return (
                   <div
                     style={{
-                      paddingLeft: "10px",
-                      paddingRight: "10px",
+                      paddingLeft: "30px",
+                      paddingRight: "30px",
                       backgroundColor : "#9fe6e2",
                     }}
                   >
@@ -1893,6 +1893,7 @@ class Rubric extends React.Component {
                             name={[field.name, 'first']}
                             fieldKey={[field.fieldKey, 'first']}
                             rules={[{ required: true, message: 'Missing section name' }]}
+                            style={{width:"300px"}}
                           >
                             <Input placeholder="Section Name" />
                           </Form.Item>
@@ -1927,12 +1928,14 @@ class Rubric extends React.Component {
                                 <div>
                                   {nicknames.map(nickname => (
                                     <>
+                                      <Divider>New Criteria</Divider>
                                       <Space key={nickname.key} style={{ display: 'flex' }} align="start">
                                         <Form.Item
                                           {...field}
                                           name={[field.name, 'first']}
                                           fieldKey={[field.fieldKey, 'first']}
-                                          rules={[{ required: true, message: 'Missing section name' }]}
+                                          rules={[{ required: true, message: 'Missing criteria name' }]}
+                                          style={{width:"300px"}}
                                         >
                                           <Input placeholder="Criteria Name" />
                                         </Form.Item>
@@ -1958,60 +1961,66 @@ class Rubric extends React.Component {
                                         style={{
                                           paddingLeft: "30px",
                                           paddingRight: "10px",
-                                          backgroundColor:"#638190"
+                                          paddingTop: "10px",
+                                          backgroundColor:"#65A1A3"
                                         }}
                                       >
-                                        <Form.List name={[field.name, 'nicknames']}>
-                                          {(nicknames, { add, remove }) => {
-                                            return (
-                                              <div>
-                                                {nicknames.map(nickname => (
-                                                  <>
-                                                    <Space key={nickname.key} style={{ display: 'flex' }} align="start">
-                                                      <Form.Item
-                                                        {...field}
-                                                        name={[field.name, 'first']}
-                                                        fieldKey={[field.fieldKey, 'first']}
-                                                        rules={[{ required: true, message: 'Missing section name' }]}
-                                                      >
-                                                        <Input placeholder="Comment Text" />
-                                                      </Form.Item>
-                                                      <Form.Item
-                                                        {...field}
-                                                        name={[field.name, 'last']}
-                                                        fieldKey={[field.fieldKey, 'last']}
-                                                        rules={[{ required: true, message: 'Missing points' }]}
-                                                      >
-                                                        <InputNumber
-                                                          size="medium"
-                                                          placeholder="Points"
-                                                        />
-                                                      </Form.Item>
-
-                                                      <MinusCircleOutlined
-                                                        onClick={() => {
-                                                          remove(nickname.name);
-                                                        }}
-                                                      />
-                                                    </Space>
-                                                  </>
-                                                ))}
-
-                                                <Form.Item>
-                                                  <Button
-                                                    type="dashed"
-                                                    onClick={() => {
-                                                      add();
-                                                    }}
-                                                    block
-                                                    style={{marginLeft:"10%",width:"80%"}}
+                                        <Form.List name="comments">
+                                          {(fields, { add, remove }) => (
+                                            <>
+                                              {fields.map(({ key, name, fieldKey, ...restField }) => (                                                  
+                                                <Space key={key} style={{ display: 'flex' }} align="start">
+                                                  <Form.Item
+                                                    {...restField}
+                                                    name={[name, 'first']}
+                                                    fieldKey={[fieldKey, 'first']}
+                                                    rules={[{ required: true, message: 'Missing comment text' }]}
+                                                    style={{width:'450px'}}
                                                   >
-                                                    <PlusOutlined /> Add Comment
-                                                  </Button>
-                                                </Form.Item>
-                                              </div>
-                                            );
-                                          }}
+                                                    <Input placeholder="Shortened Text" />
+                                                  </Form.Item>
+                                                  <Form.Item
+                                                    {...restField}
+                                                    name={[name, 'first']}
+                                                    fieldKey={[fieldKey, 'first']}
+                                                    rules={[{ required: true, message: 'Missing comment text' }]}
+                                                    style={{width:'650px'}}
+                                                  >
+                                                    <Input placeholder="Full Text" />
+                                                  </Form.Item>
+                                                  <Form.Item
+                                                    {...restField}
+                                                    name={[name, 'last']}
+                                                    fieldKey={[fieldKey, 'last']}
+                                                    rules={[{ required: true, message: 'Missing points' }]}
+                                                  >
+                                                    <InputNumber
+                                                      size="medium"
+                                                      placeholder="Points"
+                                                    />
+                                                  </Form.Item>
+
+                                                  <MinusCircleOutlined
+                                                    onClick={() => {
+                                                      remove(name);
+                                                    }}
+                                                  />
+                                                </Space>                                                  
+                                              ))}
+                                              <Form.Item>
+                                                <Button
+                                                  type="solid"
+                                                  onClick={() => {
+                                                    add();
+                                                  }}
+                                                  block
+                                                  style={{marginLeft:"10%",width:"80%", backgroundColor: 'transparent', borderColor:'black',marginBottom:'10px',marginTop:'10px'}}
+                                                >
+                                                  <PlusOutlined /> Add Comment
+                                                </Button>
+                                              </Form.Item>
+                                            </>
+                                          )}
                                         </Form.List>
                                       </div>
                                     </>
@@ -2019,12 +2028,12 @@ class Rubric extends React.Component {
 
                                   <Form.Item>
                                     <Button
-                                      type="dashed"
+                                      type="solid"
                                       onClick={() => {
                                         add();
                                       }}
                                       block
-                                      style={{marginLeft:"5%",width:"90%"}}
+                                      style={{backgroundColor: 'transparent', borderColor:'black',marginBottom:'10px',marginTop:'10px',marginLeft:"5%",width:"90%"}}
                                     >
                                       <PlusOutlined /> Add Criteria
                                     </Button>
@@ -2044,6 +2053,7 @@ class Rubric extends React.Component {
                           add();
                         }}
                         block
+                        style={{backgroundColor: 'transparent', borderColor:'black',marginBottom:'10px',marginTop:'10px'}}
                       >
                         <PlusOutlined /> Add Section
                       </Button>
