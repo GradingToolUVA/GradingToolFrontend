@@ -11,7 +11,9 @@ import {
   Upload,
   Typography,
   Divider,
-  Space
+  Space, 
+  Collapse,
+  Card
 } from "antd";
 
 import CSRFToken from '../component/CSRFToken'
@@ -20,17 +22,21 @@ import { postSubmission } from '../api/submission'
 import {
   UploadOutlined,
   PlusOutlined,
-  MinusCircleOutlined
+  MinusCircleOutlined,
+  DownSquareTwoTone,
+  CloseSquareTwoTone
 } from "@ant-design/icons";
 
 const {Option} = Select
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
+const { Panel } = Collapse;
 
 class Rubric extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      template: {}
+      template: {},
+      comments: [1,1,1]
     }
   }
 
@@ -1828,6 +1834,19 @@ class Rubric extends React.Component {
       });
   }
 
+  addComment = () => {
+    this.setState({comments: [...this.state.comments, 1]})
+  }
+
+  removeComment = (sIndex, cIndex, cmIndex) => {
+    console.log(sIndex)
+    console.log(cIndex)
+    console.log(cmIndex)
+    const newComments = [...this.state.comments]
+    newComments.splice(cmIndex, 1);
+    this.setState({comments: newComments})
+  }
+
   render() {
     return (
       <div
@@ -1874,175 +1893,167 @@ class Rubric extends React.Component {
             <DatePicker use12Hours showTime/>
           </Form.Item>
           <div>
-            <Form.List name="users">
+            <Form.List name="sections">
               {(fields, { add, remove }) => {
                 return (
                   <div
                     style={{
-                      paddingLeft: "30px",
-                      paddingRight: "30px",
-                      backgroundColor : "#9fe6e2",
+                      backgroundColor : "#9ac8de",//9fe6e2
                     }}
                   >
-                    {fields.map(field => (
+                    {fields.map((sfield, sIndex) => (
                       <>
-                        <Divider>New Section</Divider>
-                        <Space key={field.key} style={{ display: 'flex' }} align="start">
-                          <Form.Item
-                            {...field}
-                            name={[field.name, 'first']}
-                            fieldKey={[field.fieldKey, 'first']}
-                            rules={[{ required: true, message: 'Missing section name' }]}
-                            style={{width:"300px"}}
-                          >
-                            <Input placeholder="Section Name" />
-                          </Form.Item>
-                          <Form.Item
-                            {...field}
-                            name={[field.name, 'last']}
-                            fieldKey={[field.fieldKey, 'last']}
-                            rules={[{ required: true, message: 'Missing last name' }]}
-                          >
-                            <InputNumber
-                              size="medium"
-                              placeholder="Points"
-                            />
-                          </Form.Item>
-
-                          <MinusCircleOutlined
-                            onClick={() => {
-                              remove(field.name);
-                            }}
-                          />
-                        </Space>
-                        <div 
-                          style={{
-                            paddingLeft: "20px",
-                            paddingRight: "10px",
-                            backgroundColor:"#9ac8de"
-                          }}
+                        <Collapse
+                          defaultActiveKey="1"
                         >
-                          <Form.List name={[field.name, 'nicknames']}>
-                            {(nicknames, { add, remove }) => {
-                              return (
-                                <div>
-                                  {nicknames.map(nickname => (
-                                    <>
-                                      <Divider>New Criteria</Divider>
-                                      <Space key={nickname.key} style={{ display: 'flex' }} align="start">
-                                        <Form.Item
-                                          {...field}
-                                          name={[field.name, 'first']}
-                                          fieldKey={[field.fieldKey, 'first']}
-                                          rules={[{ required: true, message: 'Missing criteria name' }]}
-                                          style={{width:"300px"}}
+                          <Panel 
+                            header={
+                              <div>
+                                <Title level={4} 
+                                  editable 
+                                  style={{marginLeft:"10px",display:"inline-block"}}
+                                  onClick={event => {
+                                    event.stopPropagation(); //prevent collapse trigger
+                                  }}
+                                >
+                                  New Section
+                                </Title>
+                                <span onClick={e => {e.preventDefault(); e.stopPropagation();}}>
+                                  <InputNumber
+                                    size="medium"
+                                    placeholder="Points"
+                                    style={{marginLeft:"10px", display:"inline-block"}}
+                                  />
+                                </span>
+                                <CloseSquareTwoTone
+                                  style={{float:"right", fontSize:"large"}}
+                                  onClick={event => {
+                                    event.stopPropagation();
+                                    remove(sfield.name);
+                                  }}
+                                  twoToneColor="red"
+                                />
+                                <DownSquareTwoTone style={{float:"right", fontSize:"large"}}/>
+                              </div>}
+                            key="1"
+                            showArrow={false}
+                            style={{backgroundColor:"#9ac8de"}}
+                          >
+                            <Form.List name="criteria">
+                              {(fields, { add, remove }) => {
+                                return (
+                                  <div
+                                    style={{
+                                      backgroundColor : "#9fe6e2",//65A1A3
+                                    }}
+                                  >
+                                    {fields.map((cfield, cIndex) => (
+                                      <>
+                                        <Collapse
+                                          defaultActiveKey="1"
                                         >
-                                          <Input placeholder="Criteria Name" />
-                                        </Form.Item>
-                                        <Form.Item
-                                          {...field}
-                                          name={[field.name, 'last']}
-                                          fieldKey={[field.fieldKey, 'last']}
-                                          rules={[{ required: true, message: 'Missing points' }]}
-                                        >
-                                          <InputNumber
-                                            size="medium"
-                                            placeholder="Points"
-                                          />
-                                        </Form.Item>
-
-                                        <MinusCircleOutlined
-                                          onClick={() => {
-                                            remove(nickname.name);
-                                          }}
-                                        />
-                                      </Space>
-                                      <div 
-                                        style={{
-                                          paddingLeft: "30px",
-                                          paddingRight: "10px",
-                                          paddingTop: "10px",
-                                          backgroundColor:"#65A1A3"
-                                        }}
-                                      >
-                                        <Form.List name="comments">
-                                          {(fields, { add, remove }) => (
-                                            <>
-                                              {fields.map(({ key, name, fieldKey, ...restField }) => (                                                  
-                                                <Space key={key} style={{ display: 'flex' }} align="start">
-                                                  <Form.Item
-                                                    {...restField}
-                                                    name={[name, 'first']}
-                                                    fieldKey={[fieldKey, 'first']}
-                                                    rules={[{ required: true, message: 'Missing comment text' }]}
-                                                    style={{width:'450px'}}
-                                                  >
-                                                    <Input placeholder="Shortened Text" />
-                                                  </Form.Item>
-                                                  <Form.Item
-                                                    {...restField}
-                                                    name={[name, 'first']}
-                                                    fieldKey={[fieldKey, 'first']}
-                                                    rules={[{ required: true, message: 'Missing comment text' }]}
-                                                    style={{width:'650px'}}
-                                                  >
-                                                    <Input placeholder="Full Text" />
-                                                  </Form.Item>
-                                                  <Form.Item
-                                                    {...restField}
-                                                    name={[name, 'last']}
-                                                    fieldKey={[fieldKey, 'last']}
-                                                    rules={[{ required: true, message: 'Missing points' }]}
-                                                  >
-                                                    <InputNumber
-                                                      size="medium"
-                                                      placeholder="Points"
-                                                    />
-                                                  </Form.Item>
-
-                                                  <MinusCircleOutlined
-                                                    onClick={() => {
-                                                      remove(name);
-                                                    }}
-                                                  />
-                                                </Space>                                                  
-                                              ))}
-                                              <Form.Item>
-                                                <Button
-                                                  type="solid"
-                                                  onClick={() => {
-                                                    add();
+                                          <Panel
+                                            header={
+                                              <div>
+                                                <Title level={4} 
+                                                  editable 
+                                                  style={{marginLeft:"10px",display:"inline-block"}}
+                                                  onClick={event => {
+                                                    event.stopPropagation(); //prevent collapse trigger
                                                   }}
-                                                  block
-                                                  style={{marginLeft:"10%",width:"80%", backgroundColor: 'transparent', borderColor:'black',marginBottom:'10px',marginTop:'10px'}}
                                                 >
-                                                  <PlusOutlined /> Add Comment
-                                                </Button>
-                                              </Form.Item>
-                                            </>
-                                          )}
-                                        </Form.List>
-                                      </div>
-                                    </>
-                                  ))}
-
-                                  <Form.Item>
-                                    <Button
-                                      type="solid"
-                                      onClick={() => {
-                                        add();
-                                      }}
-                                      block
-                                      style={{backgroundColor: 'transparent', borderColor:'black',marginBottom:'10px',marginTop:'10px',marginLeft:"5%",width:"90%"}}
-                                    >
-                                      <PlusOutlined /> Add Criteria
-                                    </Button>
-                                  </Form.Item>
-                                </div>
-                              );
-                            }}
-                          </Form.List>
-                        </div>
+                                                  New Criteria
+                                                </Title>
+                                                <span onClick={e => {e.preventDefault(); e.stopPropagation();}}>
+                                                  <InputNumber
+                                                    size="medium"
+                                                    placeholder="Points"
+                                                    style={{marginLeft:"10px", display:"inline-block"}}
+                                                  />
+                                                </span>
+                                                <CloseSquareTwoTone
+                                                  style={{float:"right", fontSize:"large"}}
+                                                  onClick={event => {
+                                                    event.stopPropagation();
+                                                    remove(cfield.name);
+                                                  }}
+                                                  twoToneColor="red"
+                                                />
+                                                <DownSquareTwoTone style={{float:"right", fontSize:"large"}}/>
+                                              </div>}
+                                            key="1"
+                                            showArrow={false}
+                                            style={{backgroundColor:"#9fe6e2"}}
+                                          >
+                                            <div style={{display:"flex", overflowX:"scroll"}}>
+                                              {this.state.comments.map((c, cmIndex) => {
+                                                return (
+                                                  <Card 
+                                                    title={
+                                                      <div style={{width:"225px"}}>
+                                                        <InputNumber
+                                                          size="small"
+                                                          placeholder="Points"
+                                                        />
+                                                        <CloseSquareTwoTone
+                                                          style={{float:"right", fontSize:"large"}}
+                                                          onClick={(event) => {
+                                                            this.removeComment(sIndex,cIndex,cmIndex)
+                                                          }}
+                                                          twoToneColor="red"
+                                                        />
+                                                      </div>
+                                                    }
+                                                    style={{ height: 250, width:"250px",marginRight:"15px", marginBottom:"5px"}}
+                                                    size="small"
+                                                  >
+                                                    <div>
+                                                      <Paragraph 
+                                                        strong
+                                                        editable
+                                                      >
+                                                        Short Comment Text that might overflow
+                                                      </Paragraph>
+                                                      <Paragraph 
+                                                        editable
+                                                        style={{marginLeft:"15px"}}
+                                                      >
+                                                        Yeah this might be a little long but its okay because this is the full comment of the para-graph
+                                                      </Paragraph>
+                                                    </div>
+                                                  </Card>
+                                                )
+                                              })}
+                                              <Button 
+                                                primary 
+                                                shape="circle" 
+                                                style={{marginTop:"115px"}} 
+                                                icon={<PlusOutlined/>}
+                                                onClick={this.addComment}
+                                              ></Button>
+                                            </div>
+                                          </Panel>
+                                        </Collapse>
+                                      </>
+                                    ))}
+                                    <Form.Item>
+                                      <Button
+                                        type="solid"
+                                        onClick={() => {
+                                          add();
+                                        }}
+                                        block
+                                        style={{backgroundColor: 'transparent', borderColor:'black',marginBottom:'10px',marginTop:'10px'}}
+                                      >
+                                        <PlusOutlined /> Add Criteria
+                                      </Button>
+                                    </Form.Item>
+                                  </div>
+                                )
+                              }}
+                            </Form.List>
+                          </Panel>
+                        </Collapse>
                       </>
                     ))}
 
