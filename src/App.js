@@ -9,6 +9,7 @@ import Rubric from "./page/Rubric";
 import Export from "./page/Export";
 import Login from "./page/Login";
 import Register from "./page/Register";
+import EditRubric from "./page/EditRubric";
 
 import { Provider } from 'react-redux';
 import store from './store';
@@ -26,6 +27,7 @@ class App extends React.Component {
             <Route path="/tool" component={Tool} />
             <Route path="/create" component={Rubric}/>
             <Route path="/submission/:id" component={Export}/>
+            <Route path="/edit/:id" component={EditRubric}/>
           </Switch>
         </Router>
       </Provider>

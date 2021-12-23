@@ -18,7 +18,7 @@ import {
 
 import CSRFToken from '../component/CSRFToken'
 import Editable from '../component/Editable'
-import { postRubric, getRubricByName, getAllRubrics } from '../api/rubric'
+import { updateRubric, getRubricById } from '../api/rubric'
 import { postSubmission } from '../api/submission'
 import {
   UploadOutlined,
@@ -32,11 +32,13 @@ const {Option} = Select
 const { Title, Paragraph } = Typography;
 const { Panel } = Collapse;
 
-class Rubric extends React.Component {
+class EditRubric extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      rubrics: [],
+      tenCooledDown: true, //for the 10 second cooldown
+      changed: false,
+      name: "",
       layout: { //for the fill-out rubric, start with one empty
         sections: [ 
           {
@@ -66,80 +68,21 @@ class Rubric extends React.Component {
   }
 
   componentDidMount() {
-    getAllRubrics()
+    getRubricById(this.props.match.params.id)
       .then((response) => {
-        for(const r of response.data.content) {
-          console.log(r.assignment_name)
-          this.setState({
-            rubrics: [...this.state.rubrics, {
-              id: r.id,
-              name: r.assignment_name
-            }]
-          })
+        console.log(response.data.content.rubric)
+        const rubric = JSON.parse(response.data.content.rubric)
+        let newLayout = {
+          sections: rubric.template
         }
+        this.setState({
+          layout: newLayout,
+          name: rubric.assignment_name
+        })
       })
       .catch((error) => {
         console.log(error)
       })
-  }
-
-  editRubric = (id) => {
-    window.open('edit/'+ id, '_blank').focus();
-  }
-
-  finishRubric = (values) => { //the manual rubric upload 
-    console.log(this.state.layout)
-    const datetime = values.duedate._d.toJSON().split("T")
-    const date = datetime[0]
-    const dateSplit = date.split("-")
-    const time = datetime[1]
-    const timeSplit = time.split(":")
-    let hour = parseInt(timeSplit[0])
-    hour = hour < 4 ? 24 + (hour - 4) : hour - 4 //gmt to est conversion
-    const toUpload = {
-      template: this.state.layout.sections,
-      year: parseInt(dateSplit[0]),
-      month: parseInt(dateSplit[1]),
-      day: parseInt(dateSplit[2]),
-      hour: parseInt(hour),
-      minute: parseInt(timeSplit[1]),
-      name: values.assignment_name
-    }
-    console.log(toUpload)
-    postRubric(toUpload)
-      .then((response) => {
-        message.success("Made Rubric");
-      })
-      .catch((error) => {
-        message.error(error.message);
-      });
-  }
-
-  submitRubric = (values) => { //submits a JSON file rubric
-    const datetime = values.duedate._d.toJSON().split("T")
-    const date = datetime[0]
-    const dateSplit = date.split("-")
-    const time = datetime[1]
-    const timeSplit = time.split(":")
-    let hour = parseInt(timeSplit[0])
-    hour = hour < 4 ? 24 + (hour - 4) : hour - 4 //gmt to est conversion
-    const toUpload = {
-      template: this.state.template,
-      year: parseInt(dateSplit[0]),
-      month: parseInt(dateSplit[1]),
-      day: parseInt(dateSplit[2]),
-      hour: parseInt(hour),
-      minute: parseInt(timeSplit[1]),
-      name: values.assignment_name
-    }
-    console.log(toUpload)
-    postRubric(toUpload)
-      .then((response) => {
-        message.success("Made Rubric");
-      })
-      .catch((error) => {
-        message.error(error.message);
-      });
   }
 
   addNewSection = () => {
@@ -165,7 +108,12 @@ class Rubric extends React.Component {
         }
       ]
     })
-    this.setState({layout: updatedLayout})
+    this.setState({
+      layout: updatedLayout,
+      changed: true,
+    }, ()=> {
+      this.updateTemplate();
+    })
   }
 
   addNewCriteria = (sIndex) => {
@@ -184,7 +132,12 @@ class Rubric extends React.Component {
         }
       ]
     })
-    this.setState({layout: updatedLayout})
+    this.setState({
+      layout: updatedLayout,
+      changed: true,
+    }, ()=> {
+      this.updateTemplate();
+    })
   }
 
   addComment = (sIndex, cIndex) => {
@@ -196,103 +149,152 @@ class Rubric extends React.Component {
       },
       value: 0
     })
-    this.setState({layout: updatedLayout})
+    this.setState({
+      layout: updatedLayout,
+      changed: true,
+    }, ()=> {
+      this.updateTemplate();
+    })
   }
 
   removeSection = (sIndex) => {
     var updatedLayout = {...this.state.layout}
     updatedLayout.sections.splice(sIndex, 1) 
-    this.setState({layout: updatedLayout})
+    this.setState({
+      layout: updatedLayout,
+      changed: true,
+    }, ()=> {
+      this.updateTemplate();
+    })
   }
 
   removeCriteria = (sIndex, cIndex) => {
     var updatedLayout = {...this.state.layout}
     updatedLayout.sections[sIndex].criteria.splice(cIndex, 1)
-    this.setState({layout: updatedLayout})
+    this.setState({
+      layout: updatedLayout,
+      changed: true,
+    }, ()=> {
+      this.updateTemplate();
+    })
   }
 
   removeComment = (sIndex, cIndex, cmIndex) => {
     var updatedLayout = {...this.state.layout}
     updatedLayout.sections[sIndex].criteria[cIndex].comments.splice(cmIndex, 1)
-    this.setState({layout: updatedLayout})
+    this.setState({
+      layout: updatedLayout,
+      changed: true,
+    }, ()=> {
+      this.updateTemplate();
+    })
   }
 
   changeSectionName = (e, sIndex) => {
     var updatedLayout = {...this.state.layout}
     updatedLayout.sections[sIndex].name = e.target.value
-    this.setState({layout: updatedLayout})
+    this.setState({
+      layout: updatedLayout,
+      changed: true,
+    }, ()=> {
+      this.updateTemplate();
+    })
   }
 
   changeSectionPoints = (value, sIndex) => {
     var updatedLayout = {...this.state.layout}
     updatedLayout.sections[sIndex].ptsEarned = value
     updatedLayout.sections[sIndex].ptsPossible = value
-    this.setState({layout: updatedLayout})
+    this.setState({
+      layout: updatedLayout,
+      changed: true,
+    }, ()=> {
+      this.updateTemplate();
+    })
   }
 
   changeCriteriaName = (e, sIndex, cIndex) => {
     var updatedLayout = {...this.state.layout}
     updatedLayout.sections[sIndex].criteria[cIndex].name = e.target.value
-    this.setState({layout: updatedLayout})
+    this.setState({
+      layout: updatedLayout,
+      changed: true,
+    }, ()=> {
+      this.updateTemplate();
+    })
   }
 
   changeCriteriaPoints = (value, sIndex, cIndex) => {
     var updatedLayout = {...this.state.layout}
     updatedLayout.sections[sIndex].criteria[cIndex].ptsEarned = value
     updatedLayout.sections[sIndex].criteria[cIndex].ptsPossible = value
-    this.setState({layout: updatedLayout})
+    this.setState({
+      layout: updatedLayout,
+      changed: true,
+    }, ()=> {
+      this.updateTemplate();
+    })
   }
 
   changeCommentShort = (value, sIndex, cIndex, cmIndex) => {
     var updatedLayout = {...this.state.layout}
     updatedLayout.sections[sIndex].criteria[cIndex].comments[cmIndex].text.shortenedText = value
-    this.setState({layout: updatedLayout})
+    this.setState({
+      layout: updatedLayout,
+      changed: true,
+    }, ()=> {
+      this.updateTemplate();
+    })
   }
 
   changeCommentFull = (value, sIndex, cIndex, cmIndex) => {
     var updatedLayout = {...this.state.layout}
     updatedLayout.sections[sIndex].criteria[cIndex].comments[cmIndex].text.fullText = value
-    this.setState({layout: updatedLayout})
+    this.setState({
+      layout: updatedLayout,
+      changed: true,
+    }, ()=> {
+      this.updateTemplate();
+    })
   }
 
   changeCommentValue = (value, sIndex, cIndex, cmIndex) => {
     var updatedLayout = {...this.state.layout}
     updatedLayout.sections[sIndex].criteria[cIndex].comments[cmIndex].value = value
-    this.setState({layout: updatedLayout})
+    this.setState({
+      layout: updatedLayout,
+      changed: true,
+    }, ()=> {
+      this.updateTemplate();
+    })
+  }
+
+  updateTemplate = () => {
+    if(this.state.tenCooledDown) {
+      const params = {template: this.state.layout.sections}
+      console.log(params)
+      updateRubric(this.props.match.params.id, params)
+        .then((response) => {
+          message.success("Updated template")
+          this.setState({
+            tenCooledDown: false
+          })
+        })
+        .catch((error) => {
+          message.error("Failed to update template")
+          console.log(error)
+        })
+      setTimeout(() => {
+        this.setState({tenCooledDown: true})
+      }, 10000)
+    }
   }
 
   render() {
     return (
       <div style={{paddingLeft: "20px", paddingRight: "10px", paddingBottom: "20px"}}>
-        <Divider orientation="left">Edit Rubric</Divider>
-        {this.state.rubrics.map((r)=>{
-          console.log(r)
-          return(
-            <div>
-              <Button
-                type="link"
-                onClick={() => {this.editRubric(r.id)}}
-              >
-                {r.name}
-              </Button>
-            </div>
-          );
-        })}
-        <Divider orientation="left">Create Rubric</Divider>
+        <Divider orientation="left">{this.state.name}</Divider>
         <Form colon={true} labelAlign="left" onFinish={this.finishRubric}>
-          <Form.Item name="assignment_name" label="Assignment"
-            rules={[{required: true, message: "Please select the assignment",},]}>
-            <Select style={{width:"250px"}}>
-              <Option key={1} value="Phase 1">Phase 1</Option>
-              <Option key={2} value="Phase 2">Phase 2</Option>
-              <Option key={3} value="Phase 3">Phase 3</Option>
-              <Option key={4} value="Phase 4">Phase 4</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="duedate" label="Due Date"
-            rules={[{required: true,},]}>
-            <DatePicker use12Hours showTime/>
-          </Form.Item>
           <div style={{ backgroundColor : "#9ac8de",}}>
             {this.state.layout.sections.map((s, sIndex) => (
               <Collapse defaultActiveKey="1">
@@ -301,7 +303,7 @@ class Rubric extends React.Component {
                     <div>
                       <span onClick={e => {e.preventDefault(); e.stopPropagation();}}>
                         <Input onChange={(e)=>{this.changeSectionName(e, sIndex)}} value={s.name}style={{width:"20%",marginLeft:"10px",display:"inline-block"}}></Input>
-                        <InputNumber onChange={(value)=>{this.changeSectionPoints(value, sIndex)}} size="medium" placeholder="Points" style={{marginLeft:"10px", display:"inline-block"}}/>
+                        <InputNumber defaultValue={s.ptsPossible} onChange={(value)=>{this.changeSectionPoints(value, sIndex)}} size="medium" placeholder="Points" style={{marginLeft:"10px", display:"inline-block"}}/>
                       </span>
                       <CloseSquareTwoTone style={{float:"right", fontSize:"large"}} twoToneColor="red"
                         onClick={event => {
@@ -320,7 +322,7 @@ class Rubric extends React.Component {
                             <div>
                               <span onClick={e => {e.preventDefault(); e.stopPropagation();}}>
                                 <Input onChange={(e)=>{this.changeCriteriaName(e, sIndex, cIndex)}} value={c.name}style={{width:"20%",marginLeft:"10px",display:"inline-block"}}></Input>
-                                <InputNumber onChange={(value)=>{this.changeCriteriaPoints(value, sIndex, cIndex)}} size="medium" placeholder="Points" style={{marginLeft:"10px", display:"inline-block"}}/>
+                                <InputNumber defaultValue={c.ptsPossible} onChange={(value)=>{this.changeCriteriaPoints(value, sIndex, cIndex)}} size="medium" placeholder="Points" style={{marginLeft:"10px", display:"inline-block"}}/>
                               </span>
                               <CloseSquareTwoTone style={{float:"right", fontSize:"large"}} twoToneColor="red"
                                 onClick={event => {
@@ -337,7 +339,7 @@ class Rubric extends React.Component {
                                 <Card size="small" style={{ height: 250, width:"250px",marginRight:"15px", marginBottom:"5px"}}
                                   title={
                                     <div style={{width:"225px"}}>
-                                      <InputNumber onChange={(value)=>{this.changeCommentValue(value, sIndex, cIndex, cmIndex)}} size="small" placeholder="Points"/>
+                                      <InputNumber defaultValue={cm.value} onChange={(value)=>{this.changeCommentValue(value, sIndex, cIndex, cmIndex)}} size="small" placeholder="Points"/>
                                       <CloseSquareTwoTone twoToneColor="red" style={{float:"right", fontSize:"large"}}
                                         onClick={(event) => {
                                           this.removeComment(sIndex,cIndex,cmIndex)
@@ -376,88 +378,11 @@ class Rubric extends React.Component {
               this.addNewSection();
             }}
           ><PlusOutlined /> Add Section</Button>
-          <Button htmlType="submit" type="primary">Upload</Button>
         </Form>
-        <Divider orientation="left">Upload rubric with JSON Template</Divider>
         {/* <Button onClick={this.makeRubric}>Make Rubrics</Button> */}
-        <Form
-          colon={true}
-          labelAlign="left"
-          onFinish={this.submitRubric}
-        >
-          <Form.Item
-            name="assignment_name"
-            label="Assignment"
-            rules={[
-              {
-                required: true,
-                message: "Please select the assignment",
-              },
-            ]}
-          >
-            <Select
-              style={{width:"250px"}}
-            >
-              <Option key={1} value="Phase 1">Phase 1</Option>
-              <Option key={2} value="Phase 2">Phase 2</Option>
-              <Option key={3} value="Phase 3">Phase 3</Option>
-              <Option key={4} value="Phase 4">Phase 4</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item
-            name="duedate"
-            label="Due Date"
-            rules={[
-              {
-                required: true,
-              },
-            ]}
-          >
-            <DatePicker use12Hours showTime/>
-          </Form.Item>
-          <Form.Item
-            name="template"
-            label="Rubric File"
-            rules={[
-              {
-                required: true,
-                message: "Please select the assignment",
-              },
-            ]}
-          >
-            <Upload
-              accept=".txt, .json"
-              showUploadList={true}
-              maxCount={1}
-              beforeUpload={file => {
-                const reader = new FileReader();
-
-                reader.onload = e => {
-                  //console.log(e.target.result);
-                  const template = e.target.result
-                  const jsontemp = JSON.parse(template)
-                  //console.log(jsontemp.template)
-                  this.setState({
-                    template: jsontemp.template
-                  }, () => {
-                    message.success("File uploaded");
-                  })
-                };
-                reader.readAsText(file);
-                return true;
-              }}
-              onChange={(info) => { //does nothing, just turns it normal state instead of red
-                info.file.status = "done"
-              }}
-            >
-              <Button icon={<UploadOutlined/>}>Upload </Button>
-            </Upload>
-          </Form.Item>
-          <Button htmlType="submit" type="primary">Submit</Button>
-        </Form>
       </div>
     );
   }
 }
 
-export default Rubric;
+export default EditRubric;
